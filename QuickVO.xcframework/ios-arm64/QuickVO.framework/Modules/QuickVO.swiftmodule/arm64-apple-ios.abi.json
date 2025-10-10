@@ -31664,7 +31664,7 @@
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/RTC\/WebRTCClient.swift",
       "kind": "StringLiteral",
-      "offset": 11636,
+      "offset": 11640,
       "length": 5,
       "value": "\"sfu\""
     },
@@ -32490,35 +32490,35 @@
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/Server\/RTCRoomNet.swift",
       "kind": "BooleanLiteral",
-      "offset": 7212,
+      "offset": 7325,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/Server\/RTCRoomNet.swift",
       "kind": "StringLiteral",
-      "offset": 7559,
+      "offset": 7672,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/Server\/RTCRoomNet.swift",
       "kind": "StringLiteral",
-      "offset": 7581,
+      "offset": 7694,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/Server\/RTCRoomNet.swift",
       "kind": "IntegerLiteral",
-      "offset": 11623,
+      "offset": 11736,
       "length": 3,
       "value": "666"
     },
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/Server\/RTCRoomNet.swift",
       "kind": "IntegerLiteral",
-      "offset": 11648,
+      "offset": 11761,
       "length": 4,
       "value": "4010"
     },
