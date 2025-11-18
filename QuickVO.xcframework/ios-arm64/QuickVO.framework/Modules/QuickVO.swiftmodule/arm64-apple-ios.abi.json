@@ -32859,21 +32859,21 @@
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/RTC\/WebRTCClient.swift",
       "kind": "BooleanLiteral",
-      "offset": 4898,
+      "offset": 4897,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/RTC\/WebRTCClient.swift",
       "kind": "BooleanLiteral",
-      "offset": 6894,
+      "offset": 7542,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/snqu-0523\/Desktop\/QuickVO\/QuickVO\/RTC\/WebRTCClient.swift",
       "kind": "StringLiteral",
-      "offset": 12133,
+      "offset": 12781,
       "length": 5,
       "value": "\"sfu\""
     },
