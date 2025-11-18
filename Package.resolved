@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/motian30/GPUPixelLib.git",
       "state" : {
-        "revision" : "94b73cc945ec1d2c6b1065d00cd5f699f24d438b",
-        "version" : "1.0.4"
+        "revision" : "218dd1a882edf85f61b99715b3bdc275faa187b8",
+        "version" : "1.0.5"
       }
     },
     {

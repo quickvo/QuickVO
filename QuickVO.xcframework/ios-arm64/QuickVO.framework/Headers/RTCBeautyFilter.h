@@ -50,4 +50,6 @@
 
 - (void)setSpecialEffectsSink:(NSInteger )index;
 
+- (void)setStikerSink:(NSInteger )index;
+
 @end

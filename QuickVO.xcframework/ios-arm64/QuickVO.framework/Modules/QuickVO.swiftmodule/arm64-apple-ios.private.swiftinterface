@@ -185,7 +185,8 @@ public enum SimulcastType : Swift.Sendable {
 public struct RoomUserSubData {
   public var id: Swift.String
   public var track: [QuickVO.RoomTrackType]
-  public init(id: Swift.String = "", track: [QuickVO.RoomTrackType] = [])
+  public var simucast: QuickVO.SimulcastType?
+  public init(id: Swift.String = "", track: [QuickVO.RoomTrackType] = [], simucast: QuickVO.SimulcastType? = nil)
 }
 final public class RTCRoom {
   weak final public var delegate: (any QuickVO.RTCRoomDelegate)?
@@ -256,7 +257,7 @@ extension QuickVO.RoomTrack : Swift.Hashable, Swift.Equatable {
     get
   }
 }
-public enum RoomTrackType : Swift.CaseIterable, Swift.Hashable {
+public enum RoomTrackType : Swift.CaseIterable, Swift.Hashable, Swift.Sendable {
   case audio
   case camera
   case screen
@@ -519,9 +520,10 @@ public struct RoomLocalOption : Swift.Sendable {
   public var subscribeType: QuickVO.StreamType
   public var publishType: QuickVO.StreamType
   public var scene: QuickVO.RoomScene
+  public var enalbleSimulcast: Swift.Bool
   public var userFontCamera: Swift.Bool
   public var defaultAuioSpeakerOn: Swift.Bool
-  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication)
+  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false)
 }
 public enum RoomVideoRotation : Swift.Int, Swift.Sendable {
   case _0
@@ -723,6 +725,10 @@ public struct RoomSubData {
     get
     set
   }
+  final public var stiker: QuickVO.RoomStickerFilter {
+    get
+    set
+  }
   final public func reset()
   @objc deinit
 }
@@ -879,6 +885,34 @@ public enum RoomEffectFilterCase : Swift.Int, Swift.Sendable, Swift.CaseIterable
     get
     set
   }
+  @objc deinit
+}
+public enum RoomStickerFilterCase : Swift.Int, Swift.Sendable, Swift.CaseIterable {
+  case none
+  case bitie
+  case clown
+  case glass
+  case eyesmask
+  public init?(rawValue: Swift.Int)
+  public typealias AllCases = [QuickVO.RoomStickerFilterCase]
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [QuickVO.RoomStickerFilterCase] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers public class RoomStickerFilter {
+  public var enable: Swift.Bool {
+    get
+    set
+  }
+  public var value: QuickVO.RoomStickerFilterCase {
+    get
+    set
+  }
+  public func reset()
   @objc deinit
 }
 extension QuickVO.LocalRTCParticipant {
@@ -1060,6 +1094,9 @@ extension QuickVO.RoomNetUtils.PingError : Swift.Hashable {}
 extension QuickVO.RoomEffectFilterCase : Swift.Equatable {}
 extension QuickVO.RoomEffectFilterCase : Swift.Hashable {}
 extension QuickVO.RoomEffectFilterCase : Swift.RawRepresentable {}
+extension QuickVO.RoomStickerFilterCase : Swift.Equatable {}
+extension QuickVO.RoomStickerFilterCase : Swift.Hashable {}
+extension QuickVO.RoomStickerFilterCase : Swift.RawRepresentable {}
 extension QuickVO.RoomLivePlaybackUrls.RoomLiveLocation : Swift.Equatable {}
 extension QuickVO.RoomLivePlaybackUrls.RoomLiveLocation : Swift.Hashable {}
 extension QuickVO.RoomLivePlaybackUrls.RoomLiveLocation : Swift.RawRepresentable {}
