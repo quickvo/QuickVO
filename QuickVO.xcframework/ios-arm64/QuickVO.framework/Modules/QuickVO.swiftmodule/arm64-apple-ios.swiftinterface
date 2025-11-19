@@ -52,6 +52,7 @@ public protocol RTCParticipantDelegate : AnyObject {
   func speaking(_ participant: QuickVO.RTCParticipant, _ speaking: Swift.Bool)
   func network(_ participant: QuickVO.RTCParticipant, _ net: QuickVO.NetMonitorValue)
   func forbid(_ participant: QuickVO.RTCParticipant, _ action: QuickVO.PaticipantForbidAction)
+  func speechString(_ participant: QuickVO.RTCParticipant, _ string: QuickVO.RoomSpeechData)
 }
 extension QuickVO.RTCParticipantDelegate {
   public func addAuidoTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomAudioTrack)
@@ -59,10 +60,13 @@ extension QuickVO.RTCParticipantDelegate {
   public func speaking(_ participant: QuickVO.RTCParticipant, _ speaking: Swift.Bool)
   public func network(_ participant: QuickVO.RTCParticipant, _ net: QuickVO.NetMonitorValue)
   public func forbid(_ participant: QuickVO.RTCParticipant, _ action: QuickVO.PaticipantForbidAction)
+  public func speechString(_ participant: QuickVO.RTCParticipant, _ string: QuickVO.RoomSpeechData)
 }
 public protocol RTCParticipantDebugDelegate : AnyObject {
   func p2pChange(_ participant: QuickVO.RTCParticipant)
   func debugInfo(_ participant: QuickVO.RTCParticipant)
+}
+public struct RoomSpeechData {
 }
 extension WebRTC.RTCSessionDescription : @unchecked @retroactive Swift.Sendable {
 }
