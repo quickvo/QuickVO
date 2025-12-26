@@ -587,9 +587,17 @@ public struct RoomLocalOption : Swift.Sendable {
   public var publishType: QuickVO.StreamType
   public var scene: QuickVO.RoomScene
   public var enalbleSimulcast: Swift.Bool
+  public var serverSpeech: QuickVO.RoomSpeechOption
   public var userFontCamera: Swift.Bool
   public var defaultAuioSpeakerOn: Swift.Bool
-  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false)
+  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false, serverSpeech: QuickVO.RoomSpeechOption = RoomSpeechOption())
+}
+public struct RoomSpeechOption : Swift.Sendable {
+  public var open: Swift.Bool
+  public var lang: Swift.String?
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(open: Swift.Bool? = false, lang: Swift.String? = nil)
+  #endif
 }
 @_hasMissingDesignatedInitializers open class RTCParticipant {
   weak public var delegate: (any QuickVO.RTCParticipantDelegate)?
