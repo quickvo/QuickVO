@@ -439,6 +439,7 @@ public struct NetMonitorValue {
   public var bitrate: Swift.Double?
   public var codecA: Swift.String?
   public var codecV: Swift.String?
+  public var mid: Swift.String?
 }
 public actor TaskActor<T> {
   #if compiler(>=5.3) && $NonescapableTypes
@@ -656,9 +657,11 @@ public struct RoomSpeechOption : Swift.Sendable {
     get
     set
   }
-  public var p2pRpnet: QuickVO.NetMonitorValue
-  public var p2pSnet: QuickVO.NetMonitorValue
   @objc deinit
+}
+extension QuickVO.RTCParticipant {
+  public func getP2PRStatis() -> [QuickVO.NetMonitorValue]
+  public func getP2PSStatis() -> [QuickVO.NetMonitorValue]
 }
 public enum RTCParticipantAtion {
   case audioEnable(Swift.Bool)
