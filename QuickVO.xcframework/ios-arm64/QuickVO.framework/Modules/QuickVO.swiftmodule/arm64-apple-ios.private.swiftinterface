@@ -769,6 +769,10 @@ public struct RoomSubData {
     get
     set
   }
+  public var renderBuffer: ((AVFAudio.AVAudioPCMBuffer) -> Swift.Void)? {
+    get
+    set
+  }
   @objc deinit
 }
 public struct RoomAudioLevel {

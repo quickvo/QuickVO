@@ -20252,6 +20252,152 @@
                 "accessorKind": "_modify"
               }
             ]
+          },
+          {
+            "kind": "Var",
+            "name": "renderBuffer",
+            "printedName": "renderBuffer",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "((AVFAudio.AVAudioPCMBuffer) -> ())?",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(AVFAudio.AVAudioPCMBuffer) -> ()",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AVAudioPCMBuffer",
+                        "printedName": "AVFAudio.AVAudioPCMBuffer",
+                        "usr": "c:objc(cs)AVAudioPCMBuffer"
+                      }
+                    ]
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvp",
+            "mangledName": "$s7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvp",
+            "moduleName": "QuickVO",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "((AVFAudio.AVAudioPCMBuffer) -> ())?",
+                    "children": [
+                      {
+                        "kind": "TypeFunc",
+                        "name": "Function",
+                        "printedName": "(AVFAudio.AVAudioPCMBuffer) -> ()",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "AVAudioPCMBuffer",
+                            "printedName": "AVFAudio.AVAudioPCMBuffer",
+                            "usr": "c:objc(cs)AVAudioPCMBuffer"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvg",
+                "mangledName": "$s7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvg",
+                "moduleName": "QuickVO",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "((AVFAudio.AVAudioPCMBuffer) -> ())?",
+                    "children": [
+                      {
+                        "kind": "TypeFunc",
+                        "name": "Function",
+                        "printedName": "(AVFAudio.AVAudioPCMBuffer) -> ()",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "AVAudioPCMBuffer",
+                            "printedName": "AVFAudio.AVAudioPCMBuffer",
+                            "usr": "c:objc(cs)AVAudioPCMBuffer"
+                          }
+                        ]
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvs",
+                "mangledName": "$s7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvs",
+                "moduleName": "QuickVO",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvM",
+                "mangledName": "$s7QuickVO14RoomAudioTrackC12renderBufferySo16AVAudioPCMBufferCcSgvM",
+                "moduleName": "QuickVO",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
           }
         ],
         "declKind": "Class",
