@@ -267,9 +267,6 @@ extension QuickVO.RTCRoom {
   final public func enableSpeaker(_ enable: Swift.Bool)
   @available(*, deprecated, renamed: "localPartipant.speakerIsEnable", message: "Use localPartipant.speakerIsEnable instead")
   final public func speakerIsEnable() async -> Swift.Bool
-  @discardableResult
-  @available(*, deprecated, renamed: "localPartipant.switchSpeaker", message: "Use localPartipant.switchSpeaker instead")
-  final public func switchSpeaker() async -> Swift.Bool
   @available(*, deprecated, renamed: "localPartipant.enableMicrophone", message: "Use localPartipant.enableMicrophone instead")
   final public func enableMicrophone(_ enable: Swift.Bool)
   @available(*, deprecated, renamed: "localPartipant.microphoneIsEnable", message: "Use localPartipant.microphoneIsEnable instead")
@@ -789,6 +786,7 @@ extension QuickVO.LocalRTCParticipant {
   final public func microphoneIsEnable() -> Swift.Bool
   final public func speakerIsEnable() async -> Swift.Bool
   final public func enableSpeaker(_ enable: Swift.Bool)
+  final public func switchSpeaker()
 }
 extension QuickVO.LocalRTCParticipant {
   final public func playAudio(_ url: Foundation.URL, _ loop: Swift.Int = 0) async throws

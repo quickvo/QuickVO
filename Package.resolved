@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "gpupixel-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/quickvo/gpupixel-iOS.git",
+      "state" : {
+        "revision" : "69f38a9bff24cabdc3d340c8e4d3db09b09f5167",
+        "version" : "1.2.0"
+      }
+    },
+    {
       "identity" : "gzipswift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/1024jp/GzipSwift",
