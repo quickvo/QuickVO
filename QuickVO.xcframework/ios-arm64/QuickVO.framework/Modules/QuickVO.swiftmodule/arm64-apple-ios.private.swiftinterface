@@ -673,6 +673,8 @@ extension AVFoundation.AVCaptureDevice {
 }
 public struct RoomLocalOption : Swift.Sendable {
   public var defaultStartCamera: Swift.Bool
+  public var defaultStartMicrophone: Swift.Bool
+  public var preWarmMicrophone: Swift.Bool
   public var subscribeType: QuickVO.StreamType
   public var publishType: QuickVO.StreamType
   public var scene: QuickVO.RoomScene
@@ -682,7 +684,7 @@ public struct RoomLocalOption : Swift.Sendable {
   public var prePublishBaseURL: Foundation.URL?
   public var userFontCamera: Swift.Bool
   public var defaultAuioSpeakerOn: Swift.Bool
-  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false, serverSpeech: QuickVO.RoomSpeechOption = RoomSpeechOption(), prePublishAuthToken: Swift.String? = nil, prePublishBaseURL: Foundation.URL? = nil)
+  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultStartMicrophone: Swift.Bool = true, preWarmMicrophone: Swift.Bool = false, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false, serverSpeech: QuickVO.RoomSpeechOption = RoomSpeechOption(), prePublishAuthToken: Swift.String? = nil, prePublishBaseURL: Foundation.URL? = nil)
 }
 public struct RoomSpeechOption : Swift.Sendable {
   @available(*, deprecated, message: "Ignored. Use RTCRoom.setLocalSpeechRecognition(_:) to turn speech recognition on or off.")
