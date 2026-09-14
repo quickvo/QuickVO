@@ -16,8 +16,6 @@ import CoreMedia
 import CoreVideo
 import Darwin
 import Foundation
-import LanvizeGLBeauty
-import LanvizeVideoCore
 import MachO
 import Metal
 import MetalKit
@@ -34,7 +32,6 @@ import VisionKit
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
-import gpupixel
 import os.lock
 import os
 final public class RoomVideoCaptureConfig {
@@ -1232,6 +1229,11 @@ extension QuickVO.RTCRoom {
   final public func camerPosion() -> QuickVO.RTCCameraPosion
   @available(*, deprecated, renamed: "localPartipant.startPreview", message: "Use localPartipant.startPreview instead")
   final public func startPreview(_ render: QuickVO.RoomVideoView) async
+}
+public enum RTCRoomBeauty {
+  public static var isPluginLinked: Swift.Bool {
+    get
+  }
 }
 public struct RoomSubData {
 }
