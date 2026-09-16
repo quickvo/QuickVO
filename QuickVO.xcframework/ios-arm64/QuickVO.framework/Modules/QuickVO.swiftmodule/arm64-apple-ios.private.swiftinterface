@@ -843,6 +843,11 @@ public enum NetworkMotorType : Swift.Sendable {
   @objc deinit
 }
 extension QuickVO.RTCParticipant {
+  public var publishedTrackTypes: Swift.Set<QuickVO.RoomTrackType> {
+    get
+  }
+}
+extension QuickVO.RTCParticipant {
   public func getP2PRStatis() -> [QuickVO.NetMonitorValue]
   public func getP2PSStatis() -> [QuickVO.NetMonitorValue]
   public var dcRemoteStats: [Swift.String : QuickVO.DCRemoteStats] {
@@ -926,7 +931,7 @@ public struct RTCReconnectPolicy : Swift.Sendable {
   public var episodeMaxSeconds: Swift.Double
   public var socketConnectTimeoutSeconds: Swift.Double
   public var suspensionGapSeconds: Swift.Double
-  public init(gracePeriodSeconds: Swift.Double = 3.0, quickRecoverTimeoutSeconds: Swift.Double = 5.0, rebuildTimeoutSeconds: Swift.Double = 5.0, relayTimeoutSeconds: Swift.Double = 40.0, maxRebuildAttempts: Swift.Int = 1, rebuildDeadlineSeconds: Swift.Double = 40.0, socketReadyTimeoutSeconds: Swift.Double = 5.0, subscribeRetryMaxAttempts: Swift.Int = 3, subscribeRetryBackoffSeconds: [Swift.Double] = [1, 2, 4], socketPongTimeoutMisses: Swift.Int = 3, socketReconnectBackoffSeconds: [Swift.Double] = [0, 1, 2, 4, 8], socketReconnectTimeoutSeconds: Swift.Double = 41.0, relayFirstOnNetworkChange: Swift.Bool = false, socketConnectTimeoutSeconds: Swift.Double = 10.0, episodeMaxSeconds: Swift.Double = 40.0, suspensionGapSeconds: Swift.Double = 5.0)
+  public init(gracePeriodSeconds: Swift.Double = 3.0, quickRecoverTimeoutSeconds: Swift.Double = 5.0, rebuildTimeoutSeconds: Swift.Double = 5.0, relayTimeoutSeconds: Swift.Double = 40.0, maxRebuildAttempts: Swift.Int = 1, rebuildDeadlineSeconds: Swift.Double = 40.0, socketReadyTimeoutSeconds: Swift.Double = 5.0, subscribeRetryMaxAttempts: Swift.Int = 3, subscribeRetryBackoffSeconds: [Swift.Double] = [2, 2, 4], socketPongTimeoutMisses: Swift.Int = 3, socketReconnectBackoffSeconds: [Swift.Double] = [0, 1, 2, 4, 8], socketReconnectTimeoutSeconds: Swift.Double = 41.0, relayFirstOnNetworkChange: Swift.Bool = false, socketConnectTimeoutSeconds: Swift.Double = 10.0, episodeMaxSeconds: Swift.Double = 40.0, suspensionGapSeconds: Swift.Double = 5.0)
   public func socketReconnectBackoff(forAttempt attempt: Swift.Int) -> Swift.Double
   public func subscribeRetryBackoff(forAttempt attempt: Swift.Int) -> Swift.Double
 }
@@ -1051,6 +1056,23 @@ public struct RoomUserSubData {
   public var track: [QuickVO.RoomTrackType]
   public var simucast: QuickVO.SimulcastType?
   public init(id: Swift.String = "", track: [QuickVO.RoomTrackType] = [], simucast: QuickVO.SimulcastType? = nil)
+}
+public enum RoomSubscribeDisposition : Swift.Sendable, Swift.Equatable {
+  case sent
+  case queued
+  case dropped
+  public static func == (a: QuickVO.RoomSubscribeDisposition, b: QuickVO.RoomSubscribeDisposition) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct RoomTrackSubscribeResult : Swift.Sendable, Swift.Equatable {
+  public let userId: Swift.String
+  public let track: QuickVO.RoomTrackType
+  public let disposition: QuickVO.RoomSubscribeDisposition
+  public init(userId: Swift.String, track: QuickVO.RoomTrackType, disposition: QuickVO.RoomSubscribeDisposition)
+  public static func == (a: QuickVO.RoomTrackSubscribeResult, b: QuickVO.RoomTrackSubscribeResult) -> Swift.Bool
 }
 public struct RoomForbidLatestAction : Swift.Sendable {
   public let action: QuickVO.RoomForbid
@@ -1190,7 +1212,9 @@ extension QuickVO.RTCRoom {
   final public func join(_ roomId: Swift.String, _ option: QuickVO.RoomLocalOption) async throws
   final public func quit(intent: QuickVO.QuitIntent = .terminal) async
   final public func updateToken(_ roomId: Swift.String, _ token: Swift.String) async throws
-  final public func subscribe(_ userData: [QuickVO.RoomUserSubData]) async throws
+  @discardableResult
+  final public func subscribe(_ userData: [QuickVO.RoomUserSubData]) async throws -> [QuickVO.RoomTrackSubscribeResult]
+  final public func resyncRemoteTracks(userId: Swift.String? = nil) async
   final public func unSubscribe(_ userData: [QuickVO.RoomUserSubData]) async throws
   final public func publishStream() async throws
   final public func startScreenShare(_ appGroup: Swift.String) async throws
@@ -1716,6 +1740,7 @@ public enum ConnectError : QuickVO.RoomError {
   case disConnected
   case publishStreamFailure([QuickVO.RoomTrackType], _: QuickVO.RoomBusinessCode? = nil)
   case subscribeStreamFailure([QuickVO.RoomUserSubData])
+  case subscribeRetrying([QuickVO.RoomUserSubData])
   case unSubscribeStreamFailure([QuickVO.RoomUserSubData])
   case startScreenShareWithoutGroupId
   case screenShareGroupUnavailable(Swift.String)
@@ -1992,6 +2017,7 @@ extension QuickVO.StreamType : Swift.Equatable {}
 extension QuickVO.StreamType : Swift.Hashable {}
 extension QuickVO.SimulcastType : Swift.Equatable {}
 extension QuickVO.SimulcastType : Swift.Hashable {}
+extension QuickVO.RoomSubscribeDisposition : Swift.Hashable {}
 extension QuickVO.RoomCloseSource : Swift.Equatable {}
 extension QuickVO.RoomCloseSource : Swift.Hashable {}
 extension QuickVO.RoomCloseSource : Swift.RawRepresentable {}
