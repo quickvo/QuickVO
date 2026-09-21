@@ -297,6 +297,8 @@ public var uploadLog: Bool                                  // 默认 true，见
 public var onLog: ((RTCLogEntry) -> Void)?                  // SDK 日志回调
 public var netStatus: ((NetworkMotorStatus) -> Void)?
 public var netType: ((NetworkMotorType) -> Void)?
+public func setNoiseSuppression(_ enabled: Bool)
+public static func setNoiseSuppression(_ enabled: Bool)
 ```
 
 `onLog` 在一条专用串行队列上异步回调，不在写日志的线程上，可以安全地在回调里做重活。
@@ -656,7 +658,9 @@ public struct RoomVideoCropping {
 | `autoGainControl` | `false` |
 | `audioLevelMonitor` | `nil`（不启用房间级音量回调） |
 
-**音频三项约束在音频轨创建时绑定**，也就是首次发布音频的那一刻。通话中改动不会生效，除非音频轨被重建。要生效就在第一次 `join` 之前设置。
+**降噪（`noiseSuppression`）可在通话中热更新**：赋值立刻作用在现有共享采集轨的 WebRTC APM 上，不重建 track、不重新协商。也可调用 `RTCEngine.setNoiseSuppression(_:)`，与写这个 Bool 等价。只影响本端上行（别人听你），并且不关闭系统 Voice Processing。
+
+`echoCancellation` 与 `autoGainControl` 仍在音频轨创建时绑定，通话中改动要等下次建轨（例如下次入会）才生效。要生效就在第一次 `join` 之前设置。
 
 ### 房间级音量回调
 
@@ -1416,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.0**。
+当前版本 **1.8.9-2**。
+
+**1.8.9-2：** 会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）立刻生效，不重建音频轨。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
 
 **1.8.0 的变化：** 相对 1.7.9 公开接口是纯增量的，60 个新声明、零删除、零签名变更，全部属于新增的诊断与崩溃上报子系统。另有一个新的错误枚举 case `ConnectError.screenShareGroupUnavailable(String)` —— 如果你对 `ConnectError` 做了没有 `default` 的穷举 `switch`，需要补一个分支。
 

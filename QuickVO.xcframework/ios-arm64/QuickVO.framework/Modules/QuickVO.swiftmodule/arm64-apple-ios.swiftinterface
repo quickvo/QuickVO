@@ -20,6 +20,7 @@ import MachO
 import Metal
 import MetalKit
 import Network
+import ObjectiveC
 import QVReplayKit
 import ReplayKit
 import Swift
@@ -67,7 +68,10 @@ final public class RoomAudioCaptureConfig {
   public static let defaultNoiseSuppression: Swift.Bool
   public static let defaultAutoGainControl: Swift.Bool
   final public var echoCancellation: Swift.Bool
-  final public var noiseSuppression: Swift.Bool
+  final public var noiseSuppression: Swift.Bool {
+    get
+    set
+  }
   final public var autoGainControl: Swift.Bool
   final public var audioLevelMonitor: Swift.Int?
   public init(echoCancellation: Swift.Bool, noiseSuppression: Swift.Bool, autoGainControl: Swift.Bool)
@@ -746,6 +750,8 @@ public struct RTCLogEntry {
 extension QuickVO.RTCEngine {
   public static func create(_ appId: Swift.String, socketURL: Foundation.URL? = nil, iceURL: [Swift.String]? = nil)
   final public func configure(socketURL: Foundation.URL? = nil, iceURL: [Swift.String]? = nil)
+  final public func setNoiseSuppression(_ enabled: Swift.Bool)
+  public static func setNoiseSuppression(_ enabled: Swift.Bool)
   public static func destroy()
 }
 public enum QuitIntent {
