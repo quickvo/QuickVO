@@ -1420,9 +1420,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-4**。
+当前版本 **1.8.9-5**。
 
-**1.8.9-4：** 去掉 1.8.9-3 入会崩溃的 APM 注入。会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）会重建共享音频 source 并换到现有 sender 上，`trackId` 不变；对端可能有短暂无声。请不要使用 1.8.9-3。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
+**1.8.9-5：** 会中换轨按 `trackId` 匹配 live sender（1.8.9-4 用 `isEqual` 对不上 WebRTC wrapper，日志 `senders=0`，对端听不到开关）。验收日志应出现 `senders>=1`。请不要使用 1.8.9-3 / 1.8.9-4。
+
+**1.8.9-4：** 去掉 1.8.9-3 入会崩溃的 APM 注入。会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）会重建共享音频 source 并换到现有 sender 上，`trackId` 不变；对端可能有短暂无声。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
 
 **1.8.0 的变化：** 相对 1.7.9 公开接口是纯增量的，60 个新声明、零删除、零签名变更，全部属于新增的诊断与崩溃上报子系统。另有一个新的错误枚举 case `ConnectError.screenShareGroupUnavailable(String)` —— 如果你对 `ConnectError` 做了没有 `default` 的穷举 `switch`，需要补一个分支。
 
