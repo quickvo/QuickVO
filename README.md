@@ -1420,9 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-2**。
+当前版本 **1.8.9-3**。
 
-**1.8.9-2：** 会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）立刻生效，不重建音频轨。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
+**1.8.9-3：** 会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）立刻生效，不重建音频轨。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
 
 **1.8.0 的变化：** 相对 1.7.9 公开接口是纯增量的，60 个新声明、零删除、零签名变更，全部属于新增的诊断与崩溃上报子系统。另有一个新的错误枚举 case `ConnectError.screenShareGroupUnavailable(String)` —— 如果你对 `ConnectError` 做了没有 `default` 的穷举 `switch`，需要补一个分支。
 
