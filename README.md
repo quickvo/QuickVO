@@ -658,7 +658,7 @@ public struct RoomVideoCropping {
 | `autoGainControl` | `false` |
 | `audioLevelMonitor` | `nil`（不启用房间级音量回调） |
 
-**降噪（`noiseSuppression`）可在通话中热更新**：赋值立刻作用在现有共享采集轨的 WebRTC APM 上，不重建 track、不重新协商。也可调用 `RTCEngine.setNoiseSuppression(_:)`，与写这个 Bool 等价。只影响本端上行（别人听你），并且不关闭系统 Voice Processing。
+**降噪（`noiseSuppression`）可在通话中切换**：赋值会按当前 Bool 重建共享采集 source，并用同一个 `trackId` 换到已有 sender 上（不 `addTransceiver`、不重新协商）。对端可能先短暂听不到再恢复。也可调用 `RTCEngine.setNoiseSuppression(_:)`，与写这个 Bool 等价。只影响本端上行（别人听你），并且不关闭系统 Voice Processing——关掉也不是原声麦。未建轨时只记配置，下次建轨生效。
 
 `echoCancellation` 与 `autoGainControl` 仍在音频轨创建时绑定，通话中改动要等下次建轨（例如下次入会）才生效。要生效就在第一次 `join` 之前设置。
 
@@ -1420,9 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-3**。
+当前版本 **1.8.9-4**。
 
-**1.8.9-3：** 会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）立刻生效，不重建音频轨。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
+**1.8.9-4：** 去掉 1.8.9-3 入会崩溃的 APM 注入。会中改 `RTCRoomConfig.config.audio.noiseSuppression`（或 `RTCEngine.setNoiseSuppression`）会重建共享音频 source 并换到现有 sender 上，`trackId` 不变；对端可能有短暂无声。请不要使用 1.8.9-3。`echoCancellation` / `autoGainControl` 仍是下次建轨生效。
 
 **1.8.0 的变化：** 相对 1.7.9 公开接口是纯增量的，60 个新声明、零删除、零签名变更，全部属于新增的诊断与崩溃上报子系统。另有一个新的错误枚举 case `ConnectError.screenShareGroupUnavailable(String)` —— 如果你对 `ConnectError` 做了没有 `default` 的穷举 `switch`，需要补一个分支。
 
