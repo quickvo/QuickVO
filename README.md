@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-5**。
+当前版本 **1.8.9-6**。
+
+**1.8.9-6：** 会议外放双向无声。扬声器或开摄像头时会话用 `videoChat`，不再固定 `voiceChat` 再把输出改到扬声器。声道为 0 时不把播放当成功；播放关掉再打开时重启音频引擎，避免输出回调丢了却不再装上。验收日志应出现 `session_config category=playAndRecord mode=videoChat`，以及 `start_playout channels=` 大于 0。
 
 **1.8.9-5：** 会中换轨按 `trackId` 匹配 live sender（1.8.9-4 用 `isEqual` 对不上 WebRTC wrapper，日志 `senders=0`，对端听不到开关）。验收日志应出现 `senders>=1`。请不要使用 1.8.9-3 / 1.8.9-4。
 
