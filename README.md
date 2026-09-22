@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-6**。
+当前版本 **1.8.9-7**。
+
+**1.8.9-7：** 会议里只听的成员（本地没有可发布的轨）在远端关麦后仍能听完全程。远端 `close_track microphone` 只更新名册，不再退订、停播放或把 SFU 连接打成断开；同一条连接上再开麦会重新 `start_playout`。本地发布集为空时，ICE 重启不再发 `publish`（服务端会回 2016 `Empty rtc tracks!`），改为订阅侧重协商。验收：关麦后没有 `unsubscribe` / `engine_stop reason=idle` / `cause=ice_failed`；重连日志是 `ice_restart subscribe_only`，没有 `event=publish code=2016`。
 
 **1.8.9-6：** 会议外放双向无声。扬声器或开摄像头时会话用 `videoChat`，不再固定 `voiceChat` 再把输出改到扬声器。声道为 0 时不把播放当成功；播放关掉再打开时重启音频引擎，避免输出回调丢了却不再装上。验收日志应出现 `session_config category=playAndRecord mode=videoChat`，以及 `start_playout channels=` 大于 0。
 
