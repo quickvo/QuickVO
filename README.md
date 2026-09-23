@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-7**。
+当前版本 **1.8.9-8**。
+
+**1.8.9-8：** 订阅与预览闭环。`subscribe` 成功后补发已有轨；换轨先 `removeVideoTrack`/`removeAudioTrack` 再 `add`。`subscribeStreamFailure` / `subscribeRetrying` / `trackNotPublished` 按轨带 `failures`（`code` / `attempts` / `lastRetry` / `reason`），只走 `roomError`；批量按单轨判定。重连后由 SDK 补订（`wantSub ∩ published − sfuSub`），接入方可删 `resubscribeEverything`。pull 成功后按 mid 从 transceiver 挂轨，缓冲到期不再留下「已订阅但黑屏」。`join` drain 后发 `didLoadParticipants`；同一 userId 再 joined 合并对象，不二次 `didJoin`。`startPreview` 未入会也可、不推流，返回 `Bool`（最多等 3s），以 `captureStateChanged(isCapturing:)` 为准。验收日志：`[sub] reconcile_attached`、`[capture] state_changed`、`[join] participants_loaded`。
 
 **1.8.9-7：** 会议里只听的成员（本地没有可发布的轨）在远端关麦后仍能听完全程。远端 `close_track microphone` 只更新名册，不再退订、停播放或把 SFU 连接打成断开；同一条连接上再开麦会重新 `start_playout`。本地发布集为空时，ICE 重启不再发 `publish`（服务端会回 2016 `Empty rtc tracks!`），改为订阅侧重协商。验收：关麦后没有 `unsubscribe` / `engine_stop reason=idle` / `cause=ice_failed`；重连日志是 `ice_restart subscribe_only`，没有 `event=publish code=2016`。
 

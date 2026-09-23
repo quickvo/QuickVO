@@ -424,8 +424,12 @@ extension QuickVO.LocalRTCParticipant {
   final public func camerPosion() -> QuickVO.RTCCameraPosion
   final public func cameraIsEnable() -> Swift.Bool
   final public func switchCamera(_ postion: QuickVO.RTCCameraPosion? = nil)
+  final public var isCapturing: Swift.Bool {
+    get
+  }
   final public func enableCamera(_ enable: Swift.Bool)
-  final public func startPreview(_ render: QuickVO.RoomVideoView) async
+  @discardableResult
+  final public func startPreview(_ render: QuickVO.RoomVideoView) async -> Swift.Bool
 }
 @_hasMissingDesignatedInitializers final public class LocalRTCParticipant {
   weak final public var videoCaptureDelegate: (any QuickVO.RoomVideoCaptureDelegate)?
@@ -895,6 +899,8 @@ public enum PaticipantForbidAction {
 public protocol RTCParticipantDelegate : AnyObject {
   func addVideoTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomVideoTrack)
   func addAuidoTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomAudioTrack)
+  func removeVideoTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomVideoTrack)
+  func removeAudioTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomAudioTrack)
   func action(_ participant: QuickVO.RTCParticipant, _ action: QuickVO.RTCParticipantAtion)
   func speaking(_ participant: QuickVO.RTCParticipant, _ speaking: Swift.Bool)
   func network(_ participant: QuickVO.RTCParticipant, _ net: QuickVO.NetMonitorValue)
@@ -904,6 +910,8 @@ public protocol RTCParticipantDelegate : AnyObject {
 }
 extension QuickVO.RTCParticipantDelegate {
   public func addAuidoTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomAudioTrack)
+  public func removeVideoTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomVideoTrack)
+  public func removeAudioTrack(_ participant: QuickVO.RTCParticipant, _ track: QuickVO.RoomAudioTrack)
   public func action(_ participant: QuickVO.RTCParticipant, _ action: QuickVO.RTCParticipantAtion)
   public func speaking(_ participant: QuickVO.RTCParticipant, _ speaking: Swift.Bool)
   public func network(_ participant: QuickVO.RTCParticipant, _ net: QuickVO.NetMonitorValue)
@@ -1061,7 +1069,35 @@ public struct RoomUserSubData {
   public var id: Swift.String
   public var track: [QuickVO.RoomTrackType]
   public var simucast: QuickVO.SimulcastType?
+  public var failures: [QuickVO.RoomTrackSubscribeFailure] {
+    get
+  }
   public init(id: Swift.String = "", track: [QuickVO.RoomTrackType] = [], simucast: QuickVO.SimulcastType? = nil)
+}
+public enum RoomSubscribeFailureReason : Swift.Sendable, Swift.Equatable {
+  case notReady
+  case transport
+  case lastRetryFailed
+  case trackNotExist
+  case notPublished
+  case staleTrack
+  case retryExhausted
+  case mediaNotReceived
+  public static func == (a: QuickVO.RoomSubscribeFailureReason, b: QuickVO.RoomSubscribeFailureReason) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct RoomTrackSubscribeFailure : Swift.Sendable, Swift.Equatable {
+  public let userId: Swift.String
+  public let track: QuickVO.RoomTrackType
+  public let code: Swift.Int32
+  public let attempts: Swift.Int
+  public let lastRetry: Swift.Bool
+  public let reason: QuickVO.RoomSubscribeFailureReason
+  public init(userId: Swift.String, track: QuickVO.RoomTrackType, code: Swift.Int32, attempts: Swift.Int, lastRetry: Swift.Bool, reason: QuickVO.RoomSubscribeFailureReason)
+  public static func == (a: QuickVO.RoomTrackSubscribeFailure, b: QuickVO.RoomTrackSubscribeFailure) -> Swift.Bool
 }
 public enum RoomSubscribeDisposition : Swift.Sendable, Swift.Equatable {
   case sent
@@ -1119,6 +1155,7 @@ public protocol RTCRoomDelegate : AnyObject {
   func roomDetailStatus(_ room: QuickVO.RTCRoom, _ status: (server: QuickVO.RTCRoomConnect, rtc: QuickVO.RTCRoomConnect))
   func didJoinBootTime(_ bootTime: Swift.String)
   func didQuitBootTime(_ bootTime: Swift.String)
+  func didLoadParticipants(_ room: QuickVO.RTCRoom, _ participants: [QuickVO.RTCParticipant])
   func didJoin(_ room: QuickVO.RTCRoom, _ participant: QuickVO.RTCParticipant)
   func didLeave(_ room: QuickVO.RTCRoom, _ participant: QuickVO.RTCParticipant)
   func didClose(_ room: QuickVO.RTCRoom, _ reason: QuickVO.RoomCloseReason, _ code: Swift.Int?, _ desc: Swift.String?)
@@ -1133,6 +1170,7 @@ public protocol RTCRoomDelegate : AnyObject {
   func roomForbidSetDidChange(_ room: QuickVO.RTCRoom, _ current: Swift.Set<QuickVO.RoomForbid>, _ latestActions: [QuickVO.RoomForbidLatestAction])
   func roomAdminDidChange(_ room: QuickVO.RTCRoom, _ admin: [Swift.String])
   func whiteboardStateChanged(_ room: QuickVO.RTCRoom, _ whiteboardId: Swift.String)
+  func captureStateChanged(_ room: QuickVO.RTCRoom, isCapturing: Swift.Bool)
 }
 extension QuickVO.RTCRoomDelegate {
   public func roomStatus(_ status: QuickVO.RTCRoomConnect)
@@ -1153,6 +1191,8 @@ extension QuickVO.RTCRoomDelegate {
   public func roomForbidSetDidChange(_ room: QuickVO.RTCRoom, _ current: Swift.Set<QuickVO.RoomForbid>, _ latestActions: [QuickVO.RoomForbidLatestAction])
   public func roomAdminDidChange(_ room: QuickVO.RTCRoom, _ admin: [Swift.String])
   public func whiteboardStateChanged(_ room: QuickVO.RTCRoom, _ whiteboardId: Swift.String)
+  public func didLoadParticipants(_ room: QuickVO.RTCRoom, _ participants: [QuickVO.RTCParticipant])
+  public func captureStateChanged(_ room: QuickVO.RTCRoom, isCapturing: Swift.Bool)
 }
 public struct RoomLivePlaybackUrls : Swift.Sendable {
   public var mainLine: QuickVO.RoomLivePlaybackUrls.RoomLiveUrlData?
@@ -1258,7 +1298,8 @@ extension QuickVO.RTCRoom {
   @available(*, deprecated, renamed: "localPartipant.camerPosion", message: "Use localPartipant.camerPosion instead")
   final public func camerPosion() -> QuickVO.RTCCameraPosion
   @available(*, deprecated, renamed: "localPartipant.startPreview", message: "Use localPartipant.startPreview instead")
-  final public func startPreview(_ render: QuickVO.RoomVideoView) async
+  @discardableResult
+  final public func startPreview(_ render: QuickVO.RoomVideoView) async -> Swift.Bool
 }
 public enum RTCRoomBeauty {
   public static var isPluginLinked: Swift.Bool {
@@ -2023,6 +2064,7 @@ extension QuickVO.StreamType : Swift.Equatable {}
 extension QuickVO.StreamType : Swift.Hashable {}
 extension QuickVO.SimulcastType : Swift.Equatable {}
 extension QuickVO.SimulcastType : Swift.Hashable {}
+extension QuickVO.RoomSubscribeFailureReason : Swift.Hashable {}
 extension QuickVO.RoomSubscribeDisposition : Swift.Hashable {}
 extension QuickVO.RoomCloseSource : Swift.Equatable {}
 extension QuickVO.RoomCloseSource : Swift.Hashable {}
