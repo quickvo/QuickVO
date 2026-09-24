@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-2**。
+当前版本 **1.8.10-3**。
+
+**1.8.10-3：** 视频通话听筒切不过去、开闭麦慢。`enableMicrophone` 只闸 `isEnabled`，采集和已发布 mid 保留，开麦不再 `unpublish` + `publish` + 对端 `pullTrack` 重协商；听端 `close_track_kept` 后若远端音频轨还在就不 `subTrackReq`。会话模式跟路由意图走：扬声器用 `videoChat`+`defaultToSpeaker`，听筒用 `voiceChat` 且开摄像头不再隐含外放。`setAudioRoute(.builtInReceiver)` 在视频通话里能站住；入会 `defaultAuioSpeakerOn` 只写第一次路由。外设（HFP/有线/CarPlay）优先：显式听筒不抢正在用的配件。`microphoneIsEnable` / `cameraIsEnable` 立刻读刚写入的意图。验收：闭麦没有 `unpublish_audio`；开麦没有 `subTrackReq renegotiate=true`；听筒后没有 `session_config mode=videoChat`。1.8.10-2 的接通有声与 1.8.10-1 音量合同不变。
 
 **1.8.10-2：** 视频 1v1 接通无声。房内图一旦建起来就保持 `isOutputEnabled`，`shouldPlay` 只闸 PCM，接通不再为开播放 `stop/start` 引擎；路由未变不刷图；回前台只对齐采集/播放，不走 `restartAudio`。验收：接通后没有 `engine_restart reason=playout_reenabled`，有远端声。音量合同与 1.8.10-1 相同。
 
