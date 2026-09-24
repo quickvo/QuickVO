@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.9-8**。
+当前版本 **1.8.10-1**。
+
+**1.8.10-1：** 远端播放默认从 WebRTC gain `5`（5 倍，不是 50%）改为 **unity `1.0`**。`setRoomAudioVolume` / `RTCParticipant.volume` 按 **0…1** 解释（`1` = 原声；`(1, 2]` 显式微抬；`> 2` 含旧代码里的 `5` 丢弃并落到 1.0）。房间音量粘在后续挂轨上。接入方必须删掉 `setRoomAudioVolume(5)`。1:1 会比以前明显轻，用系统音量，不要把默认增益加回去。详见 [1.8.10-1 音量迁移](docs/MIGRATION-1.8.10-1.md)。验收日志：`[av] playback_gain applied gain=1.0`；若仍有 `playback_gain_legacy value=5` 说明还在传旧值。
 
 **1.8.9-8：** 订阅与预览闭环。`subscribe` 成功后补发已有轨；换轨先 `removeVideoTrack`/`removeAudioTrack` 再 `add`。`subscribeStreamFailure` / `subscribeRetrying` / `trackNotPublished` 按轨带 `failures`（`code` / `attempts` / `lastRetry` / `reason`），只走 `roomError`；批量按单轨判定。重连后由 SDK 补订（`wantSub ∩ published − sfuSub`），接入方可删 `resubscribeEverything`。pull 成功后按 mid 从 transceiver 挂轨，缓冲到期不再留下「已订阅但黑屏」。`join` drain 后发 `didLoadParticipants`；同一 userId 再 joined 合并对象，不二次 `didJoin`。`startPreview` 未入会也可、不推流，返回 `Bool`（最多等 3s），以 `captureStateChanged(isCapturing:)` 为准。验收日志：`[sub] reconcile_attached`、`[capture] state_changed`、`[join] participants_loaded`。
 
@@ -1434,6 +1436,7 @@ public enum ConnectError: RoomError {
 
 **1.8.0 的变化：** 相对 1.7.9 公开接口是纯增量的，60 个新声明、零删除、零签名变更，全部属于新增的诊断与崩溃上报子系统。另有一个新的错误枚举 case `ConnectError.screenShareGroupUnavailable(String)` —— 如果你对 `ConnectError` 做了没有 `default` 的穷举 `switch`，需要补一个分支。
 
+- **[1.8.10-1 音量](docs/MIGRATION-1.8.10-1.md)** —— `setRoomAudioVolume` / `volume` 改为 0…1（`1` = 原声）。旧代码里的 `5` 会被丢弃。
 - **[升级指南](docs/MIGRATION-1.8.0.md)** —— 按起点版本分两条路。**从 1.7.4 及以后升级没有破坏性变更**；从 1.7.3 或更早升级则有 4 处编译期破坏（`RTCConfig` 删除、信令地址改由 `RTCEngine` 持有等），那些变更实际随 1.7.4 发布。
 
 每次发布随包提供 `build-manifest.json`，记录版本、构建号、commit、构建时间、工具链版本与链接形态，用于把线上问题对回具体构建。
