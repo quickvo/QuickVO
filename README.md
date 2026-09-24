@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-1**。
+当前版本 **1.8.10-2**。
+
+**1.8.10-2：** 视频 1v1 接通无声。房内图一旦建起来就保持 `isOutputEnabled`，`shouldPlay` 只闸 PCM，接通不再为开播放 `stop/start` 引擎；路由未变不刷图；回前台只对齐采集/播放，不走 `restartAudio`。验收：接通后没有 `engine_restart reason=playout_reenabled`，有远端声。音量合同与 1.8.10-1 相同。
 
 **1.8.10-1：** 远端播放默认从 WebRTC gain `5`（5 倍，不是 50%）改为 **unity `1.0`**。`setRoomAudioVolume` / `RTCParticipant.volume` 按 **0…1** 解释（`1` = 原声；`(1, 2]` 显式微抬；`> 2` 含旧代码里的 `5` 丢弃并落到 1.0）。房间音量粘在后续挂轨上。接入方必须删掉 `setRoomAudioVolume(5)`。1:1 会比以前明显轻，用系统音量，不要把默认增益加回去。详见 [1.8.10-1 音量迁移](docs/MIGRATION-1.8.10-1.md)。验收日志：`[av] playback_gain applied gain=1.0`；若仍有 `playback_gain_legacy value=5` 说明还在传旧值。
 
