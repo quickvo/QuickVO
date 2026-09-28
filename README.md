@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-3**。
+当前版本 **1.8.10-3**。1.8.9 线同步 **1.8.9-9**（与 1.8.10-3 同内容）。
+
+**1.8.9-9：** 把 1.8.10-1～1.8.10-3 合进 1.8.9-8：远端播放默认 unity、接通保持输出、闭麦只闸 `isEnabled`（不开麦重协商）、视频通话 `setAudioRoute(.builtInReceiver)` 能站住。验收与 1.8.10-3 相同。停在 1.8.9-8 的接入方升这一档，不要用 `from: "1.8.9-8"`（会解析到 1.8.10-3）。
 
 **1.8.10-3：** 视频通话听筒切不过去、开闭麦慢。`enableMicrophone` 只闸 `isEnabled`，采集和已发布 mid 保留，开麦不再 `unpublish` + `publish` + 对端 `pullTrack` 重协商；听端 `close_track_kept` 后若远端音频轨还在就不 `subTrackReq`。会话模式跟路由意图走：扬声器用 `videoChat`+`defaultToSpeaker`，听筒用 `voiceChat` 且开摄像头不再隐含外放。`setAudioRoute(.builtInReceiver)` 在视频通话里能站住；入会 `defaultAuioSpeakerOn` 只写第一次路由。外设（HFP/有线/CarPlay）优先：显式听筒不抢正在用的配件。`microphoneIsEnable` / `cameraIsEnable` 立刻读刚写入的意图。验收：闭麦没有 `unpublish_audio`；开麦没有 `subTrackReq renegotiate=true`；听筒后没有 `session_config mode=videoChat`。1.8.10-2 的接通有声与 1.8.10-1 音量合同不变。
 
