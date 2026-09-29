@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-4**。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10-4`**。
+当前版本 **1.8.10-5**。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10-5`**。
+
+**1.8.10-5：** CallKit 锁屏视频接通后远端滋滋滋、听不清。系统免提关掉走的是 `reason=3`（`.categoryChange`）而不是 `reason=4`（`.override`），1.8.10-4 没采纳，意图停在扬声器，接通后又拨回 speaker。`.systemCallUI` 下内置听筒/扬声器在 reason 3/4/8 都采纳为用户选择（SDK 自己正在写的除外），采纳后不写路由、不重建音频图；进房继承锁屏上已选路由。`source == .systemCallUI` 时不要再 `setAudioRoute(desired)` 写回去。验收：关免提后出现 `adopt_route source=system_override route=receiver`，`desired` 跟着变成 receiver，接通后没有 SDK `set_route speaker`，没有听筒/扬声器来回切。
 
 **1.8.10-4：** CallKit 系统通话界面免提按钮失效。新增 `RTCAudioSessionPolicy.systemCallUI`：会话全程 `playAndRecord + voiceChat`、不带 `defaultToSpeaker`，扬声器/听筒只走 `overrideOutputAudioPort`；系统免提的 `.override` 被采纳为意图，不写回。CallKit 接管前 SDK 不 `setActive`、不建音频图；请在 `didActivate` / `didDeactivate` 转发 `audioSessionDidActivate(_:)`，超时未到再调 `forceAudioSessionActivation()`。路由回调新增 `audioSessionRouteDidChange`（带来源 `.sdk` / `.systemCallUI` / `.device` / `.system`）。`.standard` 收尾不会关掉另一通已登记的 CallKit 会话；`quit(intent: .handoff)` 不会 `setActive(false)`。验收：整通电话没有 `session_config mode=videoChat` / `defaultToSpeaker=true`；点系统免提后出现 `adopt_route source=system_override`，没有 SDK 主动 `set_route`。
 
