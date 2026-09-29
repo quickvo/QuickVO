@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-7**。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10-7`**。应用内接听仍用 `.standard`。
+当前版本 **1.8.10**（与 **1.8.10-7** 同内容，只是稳定版本号）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10`**。应用内接听仍用 `.standard`。
+
+**1.8.10：** 1.8.10-7 的稳定发布，行为不变。
 
 **1.8.10-7：** `.systemCallUI` 不再跟着免提改 mode。系统按钮只更新 `desired`，不 `setCategory`、不把扬声器 override 写回去、不为这次切换重建音频图。应用内 `setAudioRoute` 只改端口。进房仍继承 CallKit 当前路由。`.standard` 不变：外放 `videoChat`+`defaultToSpeaker`，听筒 `voiceChat`。验收：锁屏听筒/扬声器能来回切；接通后没有 SDK 为免提打出的 `setCategory` / `set_route`；`build_graph` 只有一次。
 
