@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-6**。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10-6`**。
+当前版本 **1.8.10-7**。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10-7`**。应用内接听仍用 `.standard`。
+
+**1.8.10-7：** `.systemCallUI` 不再跟着免提改 mode。系统按钮只更新 `desired`，不 `setCategory`、不把扬声器 override 写回去、不为这次切换重建音频图。应用内 `setAudioRoute` 只改端口。进房仍继承 CallKit 当前路由。`.standard` 不变：外放 `videoChat`+`defaultToSpeaker`，听筒 `voiceChat`。验收：锁屏听筒/扬声器能来回切；接通后没有 SDK 为免提打出的 `setCategory` / `set_route`；`build_graph` 只有一次。
 
 **1.8.10-6：** 锁屏视频接通后远端滋滋滋。1.8.10-4 为 CallKit 免提把 `.systemCallUI` 整通锁在 `voiceChat`，进房又按视频默认写 speaker，变成 1.8.9-6 禁过的 `voiceChat` + 扬声器。这一档外放仍用 `videoChat`（不要 `defaultToSpeaker`），听筒/外设用 `voiceChat`；进房继承 CallKit 当前路由，不再用 `defaultAuioSpeakerOn` 覆盖听筒。关免提后不要把会话从 `videoChat` 改回 `voiceChat`。验收：外放 `session_config mode=videoChat defaultToSpeaker=false`；听筒 `mode=voiceChat`；锁屏关免提后 `join_route inherit`，没有 SDK `set_route speaker`。
 
