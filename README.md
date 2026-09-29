@@ -1420,7 +1420,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.10-3**。1.8.9 线同步 **1.8.9-9**（与 1.8.10-3 同内容）。
+当前版本 **1.8.10-4**。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。CallKit 接入请 **exact 锁定 `1.8.10-4`**。
+
+**1.8.10-4：** CallKit 系统通话界面免提按钮失效。新增 `RTCAudioSessionPolicy.systemCallUI`：会话全程 `playAndRecord + voiceChat`、不带 `defaultToSpeaker`，扬声器/听筒只走 `overrideOutputAudioPort`；系统免提的 `.override` 被采纳为意图，不写回。CallKit 接管前 SDK 不 `setActive`、不建音频图；请在 `didActivate` / `didDeactivate` 转发 `audioSessionDidActivate(_:)`，超时未到再调 `forceAudioSessionActivation()`。路由回调新增 `audioSessionRouteDidChange`（带来源 `.sdk` / `.systemCallUI` / `.device` / `.system`）。`.standard` 收尾不会关掉另一通已登记的 CallKit 会话；`quit(intent: .handoff)` 不会 `setActive(false)`。验收：整通电话没有 `session_config mode=videoChat` / `defaultToSpeaker=true`；点系统免提后出现 `adopt_route source=system_override`，没有 SDK 主动 `set_route`。
 
 **1.8.9-9：** 把 1.8.10-1～1.8.10-3 合进 1.8.9-8：远端播放默认 unity、接通保持输出、闭麦只闸 `isEnabled`（不开麦重协商）、视频通话 `setAudioRoute(.builtInReceiver)` 能站住。验收与 1.8.10-3 相同。停在 1.8.9-8 的接入方升这一档，不要用 `from: "1.8.9-8"`（会解析到 1.8.10-3）。
 

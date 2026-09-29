@@ -401,6 +401,13 @@ extension QuickVO.LocalRTCParticipant {
   final public func enableSpeaker(_ enable: Swift.Bool) async -> Swift.Bool
   @discardableResult
   final public func switchSpeaker() async -> Swift.Bool
+  final public var audioSessionPolicy: QuickVO.RTCAudioSessionPolicy {
+    get async
+  }
+  final public func setAudioSessionPolicy(_ policy: QuickVO.RTCAudioSessionPolicy) async
+  final public func audioSessionDidActivate(_ active: Swift.Bool) async
+  @discardableResult
+  final public func forceAudioSessionActivation() async -> Swift.Bool
   final public func restartAudio() async
 }
 extension QuickVO.LocalRTCParticipant {
@@ -689,7 +696,8 @@ public struct RoomLocalOption : Swift.Sendable {
   public var userFontCamera: Swift.Bool
   public var defaultAuioSpeakerOn: Swift.Bool
   public var preferredOutput: QuickVO.RTCAudioOutput?
-  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultStartMicrophone: Swift.Bool = true, preWarmMicrophone: Swift.Bool = false, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false, serverSpeech: QuickVO.RoomSpeechOption = RoomSpeechOption(), prePublishAuthToken: Swift.String? = nil, prePublishBaseURL: Foundation.URL? = nil, preferredOutput: QuickVO.RTCAudioOutput? = nil)
+  public var audioSessionPolicy: QuickVO.RTCAudioSessionPolicy?
+  public init(userId: Swift.String, userFontCamera: Swift.Bool = true, defaultStartCamera: Swift.Bool = true, defaultStartMicrophone: Swift.Bool = true, preWarmMicrophone: Swift.Bool = false, defaultAuioSpeakerOn: Swift.Bool = false, subscribeType: QuickVO.StreamType = .auto, publishType: QuickVO.StreamType = .auto, scence: QuickVO.RoomScene = .communication, enalbleSimulcast: Swift.Bool = false, serverSpeech: QuickVO.RoomSpeechOption = RoomSpeechOption(), prePublishAuthToken: Swift.String? = nil, prePublishBaseURL: Foundation.URL? = nil, preferredOutput: QuickVO.RTCAudioOutput? = nil, audioSessionPolicy: QuickVO.RTCAudioSessionPolicy? = nil)
 }
 public struct RoomSpeechOption : Swift.Sendable {
   @available(*, deprecated, message: "Ignored. Use RTCRoom.setLocalSpeechRecognition(_:) to turn speech recognition on or off.")
@@ -1006,6 +1014,35 @@ public struct RTCAudioOutput : Swift.Sendable, Swift.Hashable, Swift.Identifiabl
     get
   }
 }
+public enum RTCAudioSessionPolicy : Swift.Sendable, Swift.Hashable {
+  case standard
+  case systemCallUI
+  public static func == (a: QuickVO.RTCAudioSessionPolicy, b: QuickVO.RTCAudioSessionPolicy) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum RTCAudioRouteChangeSource : Swift.Sendable, Swift.Hashable {
+  case sdk
+  case systemCallUI
+  case device
+  case system
+  public static func == (a: QuickVO.RTCAudioRouteChangeSource, b: QuickVO.RTCAudioRouteChangeSource) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct RTCAudioRouteChange : Swift.Sendable {
+  public let output: QuickVO.RTCAudioOutput
+  public let source: QuickVO.RTCAudioRouteChangeSource
+  public let desired: QuickVO.RTCAudioOutput?
+  public var route: QuickVO.RTCAudioRoute {
+    get
+  }
+  public init(output: QuickVO.RTCAudioOutput, source: QuickVO.RTCAudioRouteChangeSource, desired: QuickVO.RTCAudioOutput?)
+}
 public enum RTCAudioRouteError : Swift.Error, Swift.Sendable {
   case routeUnavailable(QuickVO.RTCAudioRoute)
   case sessionFailed(any Swift.Error)
@@ -1164,6 +1201,7 @@ public protocol RTCRoomDelegate : AnyObject {
   func receivePublished(_ room: QuickVO.RTCRoom, _ sub: [QuickVO.RoomUserSubData])
   func didSubscribed(_ room: QuickVO.RTCRoom, _ sub: [QuickVO.RoomUserSubData])
   func audioSessionRouteChange(_ room: QuickVO.RTCRoom, _ route: QuickVO.RTCAudioRoute)
+  func audioSessionRouteDidChange(_ room: QuickVO.RTCRoom, _ change: QuickVO.RTCAudioRouteChange)
   func audioSessionInterrupt(_ room: QuickVO.RTCRoom, _ type: AVFAudio.AVAudioSession.InterruptionType)
   func liveDidSetPlaybackUrls(_ room: QuickVO.RTCRoom, _ urls: QuickVO.RoomLivePlaybackUrls)
   func updateAudioLevel(_ room: QuickVO.RTCRoom, _ participant: [QuickVO.RTCParticipant])
@@ -1185,6 +1223,7 @@ extension QuickVO.RTCRoomDelegate {
   public func didSubscribed(_ room: QuickVO.RTCRoom, _ sub: [QuickVO.RoomUserSubData])
   public func updateAudioLevel(_ room: QuickVO.RTCRoom, _ participant: [QuickVO.RTCParticipant])
   public func audioSessionRouteChange(_ room: QuickVO.RTCRoom, _ route: QuickVO.RTCAudioRoute)
+  public func audioSessionRouteDidChange(_ room: QuickVO.RTCRoom, _ change: QuickVO.RTCAudioRouteChange)
   public func audioSessionInterrupt(_ room: QuickVO.RTCRoom, _ type: AVFAudio.AVAudioSession.InterruptionType)
   public func liveDidSetPlaybackUrls(_ room: QuickVO.RTCRoom, _ urls: QuickVO.RoomLivePlaybackUrls)
   public func disConnectWithoutRoom(_ room: QuickVO.RTCRoom)
