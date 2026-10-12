@@ -489,6 +489,8 @@ public class RoomAudioTrack: RoomTrack {
 }
 ```
 
+本端音频轨的 `renderBuffer` 拿到的是发送前的数据：已经过系统语音处理（回声消除 / 降噪），并混入了 SDK 的背景音播放。闭麦时没有回调——"没有回调"不等于"采集静音"。
+
 ---
 
 ## 视频渲染
@@ -598,6 +600,32 @@ public enum RTCAudioRouteError {
 
 路由的实际变化通过 `RTCRoomDelegate.audioSessionRouteChange` 通知 —— 用户插拔耳机、连断蓝牙都会走这里，不要只依赖自己调用 `setAudioRoute` 的返回值来维护 UI 状态。
 
+需要知道"是谁切的"时，实现 `audioSessionRouteDidChange(_:_:)`（与 `audioSessionRouteChange` 二选一）。`RTCAudioRouteChange` 带 `output`（音频实际从哪出）、`source`、`desired`（投递时的 `desiredAudioRoute`）：
+
+| `source` | 何时出现 |
+| --- | --- |
+| `.sdk` | SDK 自己的写入：`setAudioRoute` / `enableSpeaker`、入会路由、补设与重放。落在 SDK 刚写入的端口上（2 秒内）的系统通知也归为 `.sdk` |
+| `.device` | 外设连上或断开。`desired` 不会自动改成新外设，以 `output` 为准 |
+| `.systemCallUI` | 仅 `.systemCallUI` 策略：CallKit 界面上的扬声器按钮。`desired` 已跟随更新 |
+| `.system` | 其他：别的音频客户端、无法归因的 override（`.standard` 下系统把扬声器拉回蓝牙就是这一类） |
+
+注意：写入过程中如果被系统拉回，`.system` 通知可能早于 `setAudioRoute` 返回。判断"没保住"请用 `source == .system` 且 `output` 是外设，而不是 `output != desired`。
+
+**路由切换方式（`RoomAudioCaptureConfig.routeSwitching`，1.8.11-2 起）**
+
+| 取值 | 行为 |
+| --- | --- |
+| `.seamless`（默认） | `.standard` 下整通通话会话固定为 `playAndRecord` / `voiceChat` / `.allowBluetoothHFP`，切换路由只移动端口（`setPreferredInput` / `overrideOutputAudioPort`），不 `setCategory`、不重启引擎、不重建音频图（除非硬件格式本身变了），切换无断音。`.systemCallUI` 下只有 CallKit 处于 `videoChat` 时写听筒才重启引擎 |
+| `.legacy` | 1.8.11-1 行为：会话 mode 随路由切换（扬声器 `videoChat`、听筒 `voiceChat`），写内置端口后重启引擎。保留一个版本用于回退 |
+
+在第一次 `join` 之前设置；通话中改动下一通生效。
+
+**扬声器被拉回蓝牙时的补设（仅 `.standard`）**：SDK 把输出写到扬声器后 5 秒内（从写入落地算起），如果系统以 override / routeConfigurationChange 把输出拉回同一个已连接的蓝牙外设、且外设清单没变，SDK 会自动补设一次扬声器。只补一次；再次被拉回会如实上报 `.system`，不会循环抢路由。接入方不需要也不应该自己再做"5 秒内重试"。
+
+**通话期间不要自己写 `AVAudioSession`**（`setCategory`、`setMode`、`overrideOutputAudioPort`、`setPreferredInput`、`setActive`），路由一律通过 SDK 的接口写。自写会让会话重新配置，正是断音和被拉回蓝牙的来源。
+
+**采集自愈**：引擎启动 1 秒后仍没有麦克风回调，或开麦期间输入持续 5 秒数字全零，SDK 会重建一次音频图（分别限频 10 秒、30 秒），日志见 `capture_stalled` / `capture_silent selfheal`。
+
 ### 多任务摄像头（iOS 16+ 分屏 / 台前调度）
 
 ```swift
@@ -657,6 +685,7 @@ public struct RoomVideoCropping {
 | `noiseSuppression` | `true` |
 | `autoGainControl` | `false` |
 | `audioLevelMonitor` | `nil`（不启用房间级音量回调） |
+| `routeSwitching` | `.seamless`（见[音频路由](#音频路由)） |
 
 **降噪（`noiseSuppression`）可在通话中切换**：赋值会按当前 Bool 重建共享采集 source，并用同一个 `trackId` 换到已有 sender 上（不 `addTransceiver`、不重新协商）。对端可能先短暂听不到再恢复。也可调用 `RTCEngine.setNoiseSuppression(_:)`，与写这个 Bool 等价。只影响本端上行（别人听你），并且不关闭系统 Voice Processing——关掉也不是原声麦。未建轨时只记配置，下次建轨生效。
 
@@ -1420,7 +1449,16 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-1**（与 **1.8.10** 同内容，开启 1.8.11 线）。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-1`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-2**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-2`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-2：** 丝滑路由切换与采集自愈。
+- 新增 `RTCAudioRouteSwitching` 与 `RoomAudioCaptureConfig.routeSwitching`，默认 `.seamless`：`.standard` 下切换扬声器 / 听筒 / 蓝牙不再改会话 mode、不重启引擎，切换无断音。**行为变化**：`.standard` 下扬声器也使用 `voiceChat`（之前是 `videoChat` + `defaultToSpeaker`）。回退：入会前设 `RTCRoomConfig.config.audio.routeSwitching = .legacy`，即 1.8.11-1 行为，保留一个版本。
+- `.standard` 下扬声器写入后 5 秒内被拉回同一蓝牙外设，自动补设一次；SDK 写入引起的系统通知归为 `.sdk`。
+- `.systemCallUI` 下路由写入后不再重启引擎（CallKit 处于 `videoChat` 时写听筒除外）。
+- 采集自愈：启动后无回调、开麦期间数字全零 5 秒，各重建一次音频图（限频）。
+- 诊断日志：`engine_diag`、`engine_config_change`、`capture_probe`、`audio_gap`、`set_route_timing`、`route_write_restart`；`[stats] summary` 增加 `audio_in_level`、`bytes_sent`、`packets_sent`、`in_port`、`out_port`。`rtcStats` / `heartbeat` 回包不再以 fault 级别记 `unhandled_event`。
+- 验收看日志：切换路由时出现 `route_write_restart decision=skip` 且没有 `engine_stop` / `build_graph`，`set_route_timing` 的 `set_category=0`，`audio_gap` 不出现或低于数百毫秒。
+- 公开接口只新增上述两项，其他不变。
 
 **1.8.11-1：** 1.8.10 的下一线起点，行为不变。
 
