@@ -1449,7 +1449,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-3**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-3`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-4**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-4`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-4：** 对端仍在发流、本机收不到包时，在原订阅上重拉。看门狗不再退订，也不再因此回调 `removeVideoTrack`，宫格上的轨保持绑定。重拉若换成了另一条收流轨，才会先移除再添加。三次重拉仍然没有包时，`roomError` 收到 `subscribeStreamFailure`，其中 `failures[].reason` 为 `.forwardingDropped`（对 `RoomSubscribeFailureReason` 做穷举 `switch` 需要补这个分支），然后才移除轨对象。`wantSub` 保留，应用可以再 `subscribe`。这不是对方关摄像头。验收：`heal_repull` 之后没有 `unsubscribe` / `removeVideoTrack`；`heal_repull_complete` 带 `sameReceiver=true`。次数用尽时先有 `reason=forwarding_dropped`，再有 `removeVideoTrack`。
 
 **1.8.11-3：** 只听成员退订离会者轨道时，SFU 连接保持。退订把对应 m-line 收成 `inactive`（端口和编码保留，不 `stop`）。answer 无法应用时回滚本地 offer 并恢复原先方向，房间不因此整房重连。验收：退订失败日志是 `unsubscribe_rollback`，没有 `cause=ice_failed`，其他成员的订阅还在。
 

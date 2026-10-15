@@ -1130,6 +1130,7 @@ public enum RoomSubscribeFailureReason : Swift::Sendable, Swift::Equatable {
   case staleTrack
   case retryExhausted
   case mediaNotReceived
+  case forwardingDropped
   public static func == (a: QuickVO::RoomSubscribeFailureReason, b: QuickVO::RoomSubscribeFailureReason) -> Swift::Bool
   public func hash(into hasher: inout Swift::Hasher)
   public var hashValue: Swift::Int {
