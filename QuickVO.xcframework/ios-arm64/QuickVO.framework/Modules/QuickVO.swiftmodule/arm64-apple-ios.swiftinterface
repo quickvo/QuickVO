@@ -50,6 +50,7 @@ final public class RoomVideoCaptureConfig {
     get
     set
   }
+  final public var keyFrameIntervalFrames: Swift::Int
   final public var mirror: Swift::Bool
   final public var degradation: QuickVO::RoomVideodegradation {
     get
@@ -383,6 +384,7 @@ extension QuickVO::LocalPreviewView {
 }
 extension QuickVO::LocalRTCParticipant {
   final public func enableMicrophone(_ enable: Swift::Bool)
+  final public func requestKeyFrame()
   final public func microphoneIsEnable() -> Swift::Bool
   final public var availableAudioRoutes: [QuickVO::RTCAudioOutput] {
     get async
@@ -438,6 +440,7 @@ extension QuickVO::LocalRTCParticipant {
   final public func enableCamera(_ enable: Swift::Bool)
   @discardableResult
   final public func startPreview(_ render: QuickVO::RoomVideoView) async -> Swift::Bool
+  final public func prepareAudioGraph(for option: QuickVO::RoomLocalOption) async
 }
 @_hasMissingDesignatedInitializers final public class LocalRTCParticipant {
   weak final public var videoCaptureDelegate: (any QuickVO::RoomVideoCaptureDelegate)?
@@ -687,6 +690,7 @@ public struct RoomLocalOption : Swift::Sendable {
   public var defaultStartCamera: Swift::Bool
   public var defaultStartMicrophone: Swift::Bool
   public var preWarmMicrophone: Swift::Bool
+  public var publishMicrophoneMuted: Swift::Bool
   public var subscribeType: QuickVO::StreamType
   public var publishType: QuickVO::StreamType
   public var scene: QuickVO::RoomScene
@@ -698,7 +702,7 @@ public struct RoomLocalOption : Swift::Sendable {
   public var defaultAuioSpeakerOn: Swift::Bool
   public var preferredOutput: QuickVO::RTCAudioOutput?
   public var audioSessionPolicy: QuickVO::RTCAudioSessionPolicy?
-  public init(userId: Swift::String, userFontCamera: Swift::Bool = true, defaultStartCamera: Swift::Bool = true, defaultStartMicrophone: Swift::Bool = true, preWarmMicrophone: Swift::Bool = false, defaultAuioSpeakerOn: Swift::Bool = false, subscribeType: QuickVO::StreamType = .auto, publishType: QuickVO::StreamType = .auto, scence: QuickVO::RoomScene = .communication, enalbleSimulcast: Swift::Bool = false, serverSpeech: QuickVO::RoomSpeechOption = RoomSpeechOption(), prePublishAuthToken: Swift::String? = nil, prePublishBaseURL: Foundation::URL? = nil, preferredOutput: QuickVO::RTCAudioOutput? = nil, audioSessionPolicy: QuickVO::RTCAudioSessionPolicy? = nil)
+  public init(userId: Swift::String, userFontCamera: Swift::Bool = true, defaultStartCamera: Swift::Bool = true, defaultStartMicrophone: Swift::Bool = true, preWarmMicrophone: Swift::Bool = false, publishMicrophoneMuted: Swift::Bool = false, defaultAuioSpeakerOn: Swift::Bool = false, subscribeType: QuickVO::StreamType = .auto, publishType: QuickVO::StreamType = .auto, scence: QuickVO::RoomScene = .communication, enalbleSimulcast: Swift::Bool = false, serverSpeech: QuickVO::RoomSpeechOption = RoomSpeechOption(), prePublishAuthToken: Swift::String? = nil, prePublishBaseURL: Foundation::URL? = nil, preferredOutput: QuickVO::RTCAudioOutput? = nil, audioSessionPolicy: QuickVO::RTCAudioSessionPolicy? = nil)
 }
 public struct RoomSpeechOption : Swift::Sendable {
   @available(*, deprecated, message: "Ignored. Use RTCRoom.setLocalSpeechRecognition(_:) to turn speech recognition on or off.")

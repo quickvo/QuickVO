@@ -1449,7 +1449,15 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-4**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-4`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-5**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-5`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-5：** 关麦进房可以发布一条静音音轨；预加入页可以先把音频图建好，麦克风黄点不亮；摄像头发布的第一帧是关键帧。
+- `RoomLocalOption.publishMicrophoneMuted`（默认 `false`）。`defaultStartMicrophone: false` 且这个字段为 `true`、本端有发布权、没有禁麦时，进房发布集包含 `.audio`，`isEnabled = false`，编码 `isActive = false`，硬件输入关闭。别人用 `receivePublished` 订阅，不要等 `audioEnable`。开麦把已发布的轨翻开并开始采集，不 `late_republish`、不发新 offer。麦已经开着再调 `enableMicrophone(true)` 是空操作。`publishMicrophoneMuted` 在麦意图为开时忽略。
+- `localPartipant.prepareAudioGraph(for:)` 在 `join` 之前调用，传入同一次 `join` 要用的 option。只建会话和双工图，输入保持关闭。和进房选项一致时，进房不再重建这张图。这不是热采集：开麦仍会打开输入，黄点在那一刻亮。
+- `RoomVideoCaptureConfig.keyFrameIntervalFrames` 默认 `0`（第一帧之后不额外插关键帧）。`localPartipant.requestKeyFrame()` 让每个正在编码的层下一帧出关键帧。simulcast 每一层各自的第一帧都是关键帧。
+- 关麦现在会关掉硬件输入（黄点灭），音轨仍留在发布集里，不退订。
+- 验收：关麦进房后 `[av] audio_rtp active=false`，`[av] io_input enabled=false`，`[pub] complete` 含 audio，没有 `[av] produced`。预热完成是 `[av] audio_prepare ready=true input=false`。开摄像头后 `[av] keyframe codec=… first=true`。
+- 媒体服务须接受「已发布、音频位关、零 RTP」的音轨，不能因此打 2017。新订阅者要立刻看到画面，仍由服务端发 PLI。
 
 **1.8.11-4：** 对端仍在发流、本机收不到包时，在原订阅上重拉。看门狗不再退订，也不再因此回调 `removeVideoTrack`，宫格上的轨保持绑定。重拉若换成了另一条收流轨，才会先移除再添加。三次重拉仍然没有包时，`roomError` 收到 `subscribeStreamFailure`，其中 `failures[].reason` 为 `.forwardingDropped`（对 `RoomSubscribeFailureReason` 做穷举 `switch` 需要补这个分支），然后才移除轨对象。`wantSub` 保留，应用可以再 `subscribe`。这不是对方关摄像头。验收：`heal_repull` 之后没有 `unsubscribe` / `removeVideoTrack`；`heal_repull_complete` 带 `sameReceiver=true`。次数用尽时先有 `reason=forwarding_dropped`，再有 `removeVideoTrack`。
 
