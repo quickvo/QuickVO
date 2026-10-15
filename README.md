@@ -1449,7 +1449,9 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-2**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-2`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-3**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-3`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-3：** 只听成员退订离会者轨道时，SFU 连接保持。退订把对应 m-line 收成 `inactive`（端口和编码保留，不 `stop`）。answer 无法应用时回滚本地 offer 并恢复原先方向，房间不因此整房重连。验收：退订失败日志是 `unsubscribe_rollback`，没有 `cause=ice_failed`，其他成员的订阅还在。
 
 **1.8.11-2：** 丝滑路由切换与采集自愈。
 - 新增 `RTCAudioRouteSwitching` 与 `RoomAudioCaptureConfig.routeSwitching`，默认 `.seamless`：`.standard` 下切换扬声器 / 听筒 / 蓝牙不再改会话 mode、不重启引擎，切换无断音。**行为变化**：`.standard` 下扬声器也使用 `voiceChat`（之前是 `videoChat` + `defaultToSpeaker`）。回退：入会前设 `RTCRoomConfig.config.audio.routeSwitching = .legacy`，即 1.8.11-1 行为，保留一个版本。
