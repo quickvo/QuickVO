@@ -1449,7 +1449,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-6**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-6`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-7**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-7`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-7：** 同一人离开再进时，订阅交回的是新的音视频轨，播放器会重新开。离开时的退订会 `stop` 对应的接收 transceiver，这次 offer 把该 m-line 收成端口 0，不再把同一条已 `remove` 的轨以 `isEnabled = false` 交回来。新的远端音轨 attach 时，如果当时没有别的远端音轨在播，会先结束退订后那次空的 `start_playout`，再打一次 `start_playout`。已经有别的远端音轨在播时不重开播放器。
+- 退订失败仍回滚本地 offer，房间不因此整房重连。已经 `stop` 的接收 transceiver 不会恢复成原来的方向。
+- 验收：离开日志有 `[sub] unsubscribe_release`，随后 `[sub] unsubscribe_complete`。再进后 `[av] playout_cycle reason=remote_attach`，然后 `[av] start_playout`，并且 `attachSFUAudio` / `didSubscribed(audio)` 用的 `trackId` 与离开前不同。
 
 **1.8.11-6：** 开麦进房在 `join` 返回时音轨已经发布。`defaultStartMicrophone == true` 时不复用输入关闭的预热图，进房自己打开输入，等到第一块 PCM 再把 `.audio` 放进这次 offer。`runJoin` 不等摄像头。返回后的 `enableCamera(true)` 立刻占住发布队列，还没发出 `pullTrack` 的订阅让给它。同一次订阅在 `pullTrack` 之前把后到的轨并进这一次协商。
 - 开麦且第一块 PCM 一直不来：现有的一次 `produce_watchdog` 重建之后仍没有缓冲，`join` 失败，音轨不进房间。日志是 `[pub] failed type=audio reason=no_first_buffer`。
