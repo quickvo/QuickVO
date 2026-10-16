@@ -1449,7 +1449,13 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-5**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-5`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-6**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-6`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-6：** 开麦进房在 `join` 返回时音轨已经发布。`defaultStartMicrophone == true` 时不复用输入关闭的预热图，进房自己打开输入，等到第一块 PCM 再把 `.audio` 放进这次 offer。`runJoin` 不等摄像头。返回后的 `enableCamera(true)` 立刻占住发布队列，还没发出 `pullTrack` 的订阅让给它。同一次订阅在 `pullTrack` 之前把后到的轨并进这一次协商。
+- 开麦且第一块 PCM 一直不来：现有的一次 `produce_watchdog` 重建之后仍没有缓冲，`join` 失败，音轨不进房间。日志是 `[pub] failed type=audio reason=no_first_buffer`。
+- `defaultStartCamera == false` 且摄像头没在采集时，`join` 的返回不等摄像头。`enableCamera(true)` 返回前摄像头发布已经入队，第一帧的等待发生在这个任务里。已经发出 `pullTrack` 的那一轮订阅会先结束。
+- 关麦的 `publishMicrophoneMuted` 不变：进房就有无声轨，开麦只翻转已有发送闸门。`.audio` 在 offer 完成前不记入发布集。`didPublished` 仍在 offer 完成时回调。
+- 验收：开麦进房有 `[av] audio_prepare skip reason=mic_on`（若曾预热）或没有 `audio_prepare reuse`，然后 `[pub] wait type=audio reason=first_buffer`，`[pub] complete` 含 audio，随后 `join` 才返回。没有 `[pub] deferred reason=nothing_to_publish`。返回后 `enableCamera` 先于订阅出现 `[pub] begin` types 含 camera。订阅合并日志是 `[sub] merge`。
 
 **1.8.11-5：** 关麦进房可以发布一条静音音轨；预加入页可以先把音频图建好，麦克风黄点不亮；摄像头发布的第一帧是关键帧。
 - `RoomLocalOption.publishMicrophoneMuted`（默认 `false`）。`defaultStartMicrophone: false` 且这个字段为 `true`、本端有发布权、没有禁麦时，进房发布集包含 `.audio`，`isEnabled = false`，编码 `isActive = false`，硬件输入关闭。别人用 `receivePublished` 订阅，不要等 `audioEnable`。开麦把已发布的轨翻开并开始采集，不 `late_republish`、不发新 offer。麦已经开着再调 `enableMicrophone(true)` 是空操作。`publishMicrophoneMuted` 在麦意图为开时忽略。
