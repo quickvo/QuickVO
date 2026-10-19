@@ -1449,7 +1449,16 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-7**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-7`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-8**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-8`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-8：** 观众第一次建连失败会换一条新的 SFU 连接。信令心跳一律发 `heartbeat`。订阅的 `renegotiate` 在远端 offer 已经 `setRemote` 之后返回 2020，或客户端自己超时，会拆掉这条没送出 answer 的连接再订阅。单路退订改回 `inactive`，共享连接保持。
+- 进房后、ICE 还没 `connected` 时也发 `heartbeat`。`net.joined` 仍只在 ICE 接通后置上。`heartbeatEx` 不再发送；旧回包仍按回声丢掉。
+- 首次 checking 以 `failed`（state 4）结束时，日志是 `[reconnect] ice_failed action=replace_pc reason=never_connected`，随后重建并重新订阅。已经连通过一次之后的断线仍走原来的重连阶梯。
+- `renegotiate` 超时日志是 `[sub] failed reason=renegotiate_timeout`。`pullTrack` 自己超时、远端描述还没设上时，仍按轨重试。看门狗对单轨的重拉失败不因此拆整房连接。
+- 单路退订把这一路收成 `inactive`，端口和编码保留，`trackId` 不变。失败时恢复方向和 `isEnabled`。离会的 `stopAll` 仍 `stop` 全部接收端。重新订阅仍会打开 `isEnabled`；当时没有别的远端音轨在播时，仍会 `playout_cycle`。
+- 这次退订从 `setLocal` 到结束后约 1 秒内，ICE `disconnected`（5）和 `checking`（1）只打 `[sub] unsubscribe_ice ignore`，房间保持已连接。若这段里状态掉下去，或协商结束时本来就不是 connected，再等 15 秒；到点仍未连上才重连。`failed`（4）立刻重连。
+- 只收不发的 ICE 重启如果拿到空的 `remoteSdp`，只有 ICE 已经是 connected 或 completed 才算成功。否则日志是 `renegotiate=false ok=false`。
+- 验收：观众进房后心跳事件名是 `heartbeat`。answer 超时后有 `renegotiate_timeout` 和一次 SFU 重建，而不是同一条连接上的 `codes=[0,…] reason=transport` 空等。单路退订日志是 `[sub] unsubscribe_inactive`，随后 `[sub] unsubscribe_complete`，没有 `cause=ice_failed`。
 
 **1.8.11-7：** 同一人离开再进时，订阅交回的是新的音视频轨，播放器会重新开。离开时的退订会 `stop` 对应的接收 transceiver，这次 offer 把该 m-line 收成端口 0，不再把同一条已 `remove` 的轨以 `isEnabled = false` 交回来。新的远端音轨 attach 时，如果当时没有别的远端音轨在播，会先结束退订后那次空的 `start_playout`，再打一次 `start_playout`。已经有别的远端音轨在播时不重开播放器。
 - 退订失败仍回滚本地 offer，房间不因此整房重连。已经 `stop` 的接收 transceiver 不会恢复成原来的方向。
