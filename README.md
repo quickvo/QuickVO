@@ -1449,7 +1449,12 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-8**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-8`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-9**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-9`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-9：** 同一块 `RoomVideoView` 已经在画时，再次赋给 `track.render` 不再清画面。宽高没变就不再 `size_sync`，也不再 `setFirst`。
+- 已经挂在同一条轨上的 view 被再次赋值时，直接返回，不调用 `rearmFirstFrame()`。换上另一块 view 时仍会重新 arm，下一帧可以再报一次首帧。
+- 盖住画面、等下一次 `renderFisrtFrame` 再显示的调用方，在盖住时自己调用 `RoomVideoView.rearmFirstFrame()`。
+- 验收：预览停在固定尺寸上时，每路 view 只有一条 `[render] size_sync` 和一条 `[render] first_frame`。之后不再成簇出现，小窗不再按这个节奏闪。
 
 **1.8.11-8：** 观众第一次建连失败会换一条新的 SFU 连接。信令心跳一律发 `heartbeat`。订阅的 `renegotiate` 在远端 offer 已经 `setRemote` 之后返回 2020，或客户端自己超时，会拆掉这条没送出 answer 的连接再订阅。单路退订改回 `inactive`，共享连接保持。
 - 进房后、ICE 还没 `connected` 时也发 `heartbeat`。`net.joined` 仍只在 ICE 接通后置上。`heartbeatEx` 不再发送；旧回包仍按回声丢掉。
