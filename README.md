@@ -1449,7 +1449,12 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-9**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-9`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前版本 **1.8.11-10**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-10`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+
+**1.8.11-10：** 画面闪的时候，日志能对上是哪一块视图、谁把首帧标记清掉的。同一块 view 已经在画时再次赋值仍不 `rearm`（与 1.8.11-9 相同）。
+- 每次清空首帧标记打 `[render] rearm id=… metal=… reason=attach|api mirror=… same=… trackId=…`，并带最多 12 帧调用栈。`reason=api` 是业务调用了 `rearmFirstFrame()`。`reason=attach mirror=true same=true` 是双路径下同一块 view 又被赋给 `track.render`，这次没有 `[render] attach`。
+- `[render] size_sync` 和 `[render] first_frame` 带同一个 `metal=`。新建渲染器打一次 `[render] renderer.init metal=…`。
+- 验收：成对的 `size_sync` + `first_frame` 前面，同一个 `metal=` 有一条 `rearm`。没有 `rearm` 而 `renderer.init` 在增加，是视图被新建。
 
 **1.8.11-9：** 同一块 `RoomVideoView` 已经在画时，再次赋给 `track.render` 不再清画面。宽高没变就不再 `size_sync`，也不再 `setFirst`。
 - 已经挂在同一条轨上的 view 被再次赋值时，直接返回，不调用 `rearmFirstFrame()`。换上另一块 view 时仍会重新 arm，下一帧可以再报一次首帧。
