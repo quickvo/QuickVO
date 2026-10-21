@@ -1449,7 +1449,17 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前版本 **1.8.11-10**。1.8.10 仍是稳定版（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。要这一档请 **exact 锁定 `1.8.11-10`**（`from: "1.8.10"` 不会解析到带后缀的预发布）。应用内接听仍用 `.standard`。
+当前稳定版 **1.8.11**（在 1.8.10 上修复 CallKit 扬声器上行噪音）。`from: "1.8.10"` 会升到这一版。应用内接听仍用 `.standard`。
+
+**1.8.11-1 到 1.8.11-10 是另一条预发布线，不是 1.8.11 的内容。** 已经 exact 锁定 `1.8.11-10` 的工程不要改成 `1.8.11`。按语义化版本，`1.8.11` 高于 `1.8.11-10`，那样会换到这份稳定包，预发布线上的接口不在其中。要预发布线请继续 **exact 锁定 `1.8.11-10`**。
+
+**1.8.11：** CallKit（`.systemCallUI`）从听筒切到内置扬声器后，对端听到的是人声。会话保持 `.voiceChat` 时，采集图声道保持 1，不再按扬声器硬件的 2 声道拆图。
+- 不改 category / mode，也不把 mode 写成 `.videoChat`。
+- 验收：切扬声器后没有 `graph_rebuild ... mode=voiceChat channels=2`。mode 仍是 `voiceChat`。对端是人声。CallKit 视频在 mode 仍是 `voiceChat` 时同样不再出现 `channels=2`。
+
+此前稳定版 1.8.10（与 1.8.10-7 同内容）。1.8.9 线仍停在 **1.8.9-9**（与 1.8.10-3 同内容）。
+
+下面是预发布线 **1.8.11-10** 及更早后缀版本的说明，不属于稳定版 1.8.11。
 
 **1.8.11-10：** 画面闪的时候，日志能对上是哪一块视图、谁把首帧标记清掉的。同一块 view 已经在画时再次赋值仍不 `rearm`（与 1.8.11-9 相同）。
 - 每次清空首帧标记打 `[render] rearm id=… metal=… reason=attach|api mirror=… same=… trackId=…`，并带最多 12 帧调用栈。`reason=api` 是业务调用了 `rearmFirstFrame()`。`reason=attach mirror=true same=true` 是双路径下同一块 view 又被赋给 `track.render`，这次没有 `[render] attach`。
