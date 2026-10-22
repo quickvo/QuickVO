@@ -1451,7 +1451,12 @@ public enum ConnectError: RoomError {
 
 当前稳定版 **1.8.11**（在 1.8.10 上修复 CallKit 扬声器上行噪音）。`from: "1.8.10"` 会升到这一版。应用内接听仍用 `.standard`。
 
-**1.8.11-1 到 1.8.11-10 是另一条预发布线，不是 1.8.11 的内容。** 已经 exact 锁定 `1.8.11-10` 的工程不要改成 `1.8.11`。按语义化版本，`1.8.11` 高于 `1.8.11-10`，那样会换到这份稳定包，预发布线上的接口不在其中。要预发布线请继续 **exact 锁定 `1.8.11-10`**。
+**1.8.11-1 到 1.8.11-10 是另一条预发布线，不是 1.8.11 的内容。** 已经 exact 锁定 `1.8.11-10` 的工程不要改成 `1.8.11`。按语义化版本，`1.8.11` 高于 `1.8.11-10`，那样会换到这份稳定包，预发布线上的接口不在其中。要那条预发布线请继续 **exact 锁定 `1.8.11-10`**。
+
+**1.8.12-1 是 1.8.12 的预发布，不是 1.8.11 的内容。** `from: "1.8.11"` 不会解析到它。要全景收流修复请 **exact 锁定 `1.8.12-1`**。
+
+**1.8.12-1：** 全景宫格在只订、只退摄像头之后，仍在订阅的屏幕继续对着当前这条接收轨。`receiver.track` 每次读取都是新包装，身份用原生轨（`isEqual`），不再用 `trackId` 字符串。字符串相同但原生轨已经换掉时，先 `removeVideoTrack` 再 `addVideoTrack`，原来的 view 迁到新轨上。同一次整段 SDP 之后，每条仍在订阅的视频打 `[sub] receiver_check`（`sameNative`、`mid`、`trackId`），约 1 秒后打 `[sub] receiver_packets` 或 `[sub] receiver_stall`。屏幕进入转发看门狗：发布端仍在推而本机包不涨时，重拉这一路，不先退订。重复订阅被滤掉时日志是 `[sub] filter reason=duplicate`，带 user 和 type。这次收流修复不新增公开符号。相对稳定版 1.8.11，这一包同时带上 1.8.11-1～1.8.11-10 已有的公开增量（`RTCAudioRouteSwitching`、`publishMicrophoneMuted`、`prepareAudioGraph`、`requestKeyFrame`、`keyFrameIntervalFrames`、`RoomSubscribeFailureReason.forwardingDropped`）。
+- 验收：屏幕已在画时再订摄像头，有 `receiver_check type=screen sameNative=true`，随后 `receiver_packets` 的 `to` 大于 `from`。原生轨换了则有 `receiver_replace`，然后 `removeVideoTrack` 和 `addVideoTrack`。只退离开页面的摄像头时，屏幕 mid 不在 `unsubscribe` 里，也没有 `receiver_stall`。
 
 **1.8.11：** CallKit（`.systemCallUI`）从听筒切到内置扬声器后，对端听到的是人声。会话保持 `.voiceChat` 时，采集图声道保持 1，不再按扬声器硬件的 2 声道拆图。
 - 不改 category / mode，也不把 mode 写成 `.videoChat`。
