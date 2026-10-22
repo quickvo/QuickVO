@@ -1453,7 +1453,10 @@ public enum ConnectError: RoomError {
 
 **1.8.11-1 到 1.8.11-10 是另一条预发布线，不是 1.8.11 的内容。** 已经 exact 锁定 `1.8.11-10` 的工程不要改成 `1.8.11`。按语义化版本，`1.8.11` 高于 `1.8.11-10`，那样会换到这份稳定包，预发布线上的接口不在其中。要那条预发布线请继续 **exact 锁定 `1.8.11-10`**。
 
-**1.8.12-2 是 1.8.12 的预发布，不是 1.8.11 的内容。** `from: "1.8.11"` 不会解析到它。要设联席时保留摄像头发送位，请 **exact 锁定 `1.8.12-2`**。`1.8.12-1` 是上一包，只有全景收流修复。
+**1.8.12-3 是 1.8.12 的预发布，不是 1.8.11 的内容。** `from: "1.8.11"` 不会解析到它，`1.8.12-2` 也不会自动升上来。一条 mid、一条原生接收轨只属于一个 `(userId, type)`，请 **exact 锁定 `1.8.12-3`**。`1.8.12-2` 是上一包，只有缺省 `callAction` 的修复。
+
+**1.8.12-3：** 一条 SFU mid、一条原生接收轨只留给注册表里的那一个 `(userId, type)`。第二个订阅者在 `attach` 时不会把这条 mid 写进自己的记录；已经写上的重复持有者会被 `removeVideoTrack`，再按 `(userId, type)` 重拉，请求里不带旧 mid。看门狗把一路从旧 mid 换到新 mid 时，仍记着旧 mid 的其他人同样被清掉并重拉。同一条 mid 连续两次仍被写成重复持有后停止，日志是 `[sub] receiver_claim_giveup`。释放日志是 `[sub] receiver_claim_release`，拒绝第二个写入是 `[sub] receiver_claim_reject`。不新增公开符号。这一包同时包含 1.8.12-2 的联席 `callAction` 修复和 1.8.12-1 的全景收流修复。
+- 验收：摄像头重拉从 mid=5 换到新 mid 后，仍记着 mid=5 的屏幕有 `receiver_claim_release reason=displaced`，随后 `removeVideoTrack`，再按屏幕类型重拉且请求不带 `5`。同一条 mid 上的第二个摄像头有 `receiver_claim_reject` 或 `receiver_claim_release reason=duplicate`。
 
 **1.8.12-2：** 设联席主持人时，角色通知里没有 `callAction` 不再把对方写成 `videoEnable(false)`。`onMeetSpecialRolesChange` 的 `users` 只更新权限。字段缺失时不调用 `actionChangeWith`，已有的音频、视频、屏幕位保持不变。日志是 `[room] call_action skip reason=absent`。包里显式带了 `callAction=0` 时仍按关闭处理。再次入房的合并如果也缺这个字段，保留本地已有掩码。不新增公开符号。这一包同时包含 1.8.12-1 的全景收流修复。
 - 验收：把正在开摄像头的人设为联席后，没有 `action(.videoEnable(false))`，`participant.videoEnable` 仍为设联席之前的值。日志是 `[room] call_action skip reason=absent`。显式 `callAction=0` 仍回调 `videoEnable(false)`。
