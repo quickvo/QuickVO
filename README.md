@@ -1453,7 +1453,10 @@ public enum ConnectError: RoomError {
 
 **1.8.11-1 到 1.8.11-10 是另一条预发布线，不是 1.8.11 的内容。** 已经 exact 锁定 `1.8.11-10` 的工程不要改成 `1.8.11`。按语义化版本，`1.8.11` 高于 `1.8.11-10`，那样会换到这份稳定包，预发布线上的接口不在其中。要那条预发布线请继续 **exact 锁定 `1.8.11-10`**。
 
-**1.8.12-4 是 1.8.12 的预发布，不是 1.8.11 的内容。** `from: "1.8.11"` 不会解析到它，`1.8.12-3` 也不会自动升上来。退订后再订、复用的接收 m-line 要在 answer 里回到 `recvonly`，请 **exact 锁定 `1.8.12-4`**。`1.8.12-3` 是上一包，只有一条 mid 只属于一个 `(userId, type)` 的修复。
+**1.8.12-5 是 1.8.12 的预发布，不是 1.8.11 的内容。** `from: "1.8.11"` 不会解析到它，`1.8.12-4` 也不会自动升上来。闭麦入会后再开麦，静音轨要留在原来的发送端，请 **exact 锁定 `1.8.12-5`**。`1.8.12-4` 是上一包，只有退订后再订时把接收 m-line 答回 `recvonly`。
+
+**1.8.12-5：** 闭麦入会发出的静音轨本来就是 0 包。会话检查把它报成失效时，不再对它 `restartPush`；同一份报告里的摄像头和屏幕仍会重启。日志是 `[pub] restart_skip type=audio reason=muted_advertise`。麦开着时的音频重启换到同一条 m-line、同一个 trackId 上，不再 `removeTrack` 之后另加一条 transceiver。开麦先记下麦意图并启动采集，再把轨设为 enabled，这样 `startRecording` 不会在 `host_mute` 上跳过。发送端若是在静音期间被换掉的，开麦会在第一帧 PCM 之后重新发布，编码打开；原来那条发送端仍只 `setAudioSendActive`，不会再打 `[pub] begin`。不新增公开符号。这一包同时包含 1.8.12-4 的接收方向、1.8.12-3 的 mid 独占、1.8.12-2 的联席 `callAction` 和 1.8.12-1 的全景收流修复。
+- 验收：闭麦入会后、开麦之前，服务端把静音轨报成失效时有 `restart_skip`，没有 `[pub] restart types=[audio]`。随后 `enableMicrophone(true)`，原来的发送端只打 `audio_rtp active=true`，没有新的 `[pub] begin`，`bytes_sent` 上升。麦开着时如果音频被重启，这条音频没有 `removeTrack`，`[pub] wait type=audio reason=first_buffer` 之后包数上升。
 
 **1.8.12-4：** 退订把接收 m-line 收成 `inactive` 之后，下一次订阅在 `createAnswer` 之前，把这次要复用、当前仍是 `inactive` 的接收 transceiver 设回 `recvonly`。本端正在发送的 transceiver 不改。`answer` 或 `renegotiate` 没完成时，方向恢复成 `inactive`。日志是 `[sub] receiver_reactivate`。不新增公开符号。`simulcast` 仍按客户端传入的值送出，`.low` 仍是 `"q"`。发布端没有这一层时由 SFU 转发实际在发的层，这一包不含该 SFU 行为。这一包同时包含 1.8.12-3 的 mid 独占、1.8.12-2 的联席 `callAction` 和 1.8.12-1 的全景收流修复。
 - 验收：退订摄像头后再订，复用的 mid 有 `receiver_reactivate`，随后 `receiver_packets` 的 `to` 大于 0，已经挂上的视图出首帧。本端发送的 transceiver 不在这条日志里。
