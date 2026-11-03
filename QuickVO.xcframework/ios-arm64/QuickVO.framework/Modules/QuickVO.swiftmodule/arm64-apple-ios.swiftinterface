@@ -397,6 +397,7 @@ extension QuickVO::LocalRTCParticipant {
   }
   final public func audioRouteWriteInFlight() async -> Swift::Bool
   final public func acceptSystemRoutePickerSelection() async
+  final public func ensureCallableInput(preferred: QuickVO::RTCAudioOutput?, speakerOn: Swift::Bool) async
   @discardableResult
   final public func setAudioRoute(_ output: QuickVO::RTCAudioOutput) async -> Swift::Result<QuickVO::RTCAudioOutput, QuickVO::RTCAudioRouteError>
   @discardableResult
