@@ -1451,6 +1451,9 @@ public enum ConnectError: RoomError {
 
 当前稳定版 **1.8.11**（在 1.8.10 上修复 CallKit 扬声器上行噪音）。`from: "1.8.10"` 会升到这一版。应用内接听仍用 `.standard`。
 
+**1.8.12-23：** 关麦入会后的静音帧改走 WebRTC-iOS **0.0.2**。这一包解决静音定时器里把空缓存按 960 字节下移、`memmove` 长度下溢的崩溃。SDK 侧仍由 `deliverMutedSilenceFrame` 送 20 ms 静音，不新增公开符号。预发布请 **exact 锁定 `1.8.12-23`**。依赖声明是 `WebRTC-iOS` `from: "0.0.2"`。
+- 验收：关麦入会，静音定时器触发后进程不崩。日志有 `[av] muted_silence deliver`。
+
 **1.8.12-22：** 已经订上的远端音频再次 `onPublish` 时，SDK 按看门狗的原位重拉再订这一路。静音帧、DTX、label 不变也会订。不退订，不先摘掉接收轨；拉完 receiver 还是原来那个就继续播。日志是 `[sub] publish_refresh`，接着 `[sub] held_repull via=publish`。P2P 音频不走这条。不新增公开符号。预发布请 **exact 锁定 `1.8.12-22`**。
 - 验收：对方再次发布音频后出现 `publish_refresh` 和 `held_repull via=publish`，随后有 `heal_repull_complete`（`sameReceiver=true`）或新的 `playback_gain`。没有 `unsubscribe`。
 
