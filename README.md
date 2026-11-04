@@ -1451,6 +1451,9 @@ public enum ConnectError: RoomError {
 
 当前稳定版 **1.8.11**（在 1.8.10 上修复 CallKit 扬声器上行噪音）。`from: "1.8.10"` 会升到这一版。应用内接听仍用 `.standard`。
 
+**1.8.12-22：** 已经订上的远端音频再次 `onPublish` 时，SDK 按看门狗的原位重拉再订这一路。静音帧、DTX、label 不变也会订。不退订，不先摘掉接收轨；拉完 receiver 还是原来那个就继续播。日志是 `[sub] publish_refresh`，接着 `[sub] held_repull via=publish`。P2P 音频不走这条。不新增公开符号。预发布请 **exact 锁定 `1.8.12-22`**。
+- 验收：对方再次发布音频后出现 `publish_refresh` 和 `held_repull via=publish`，随后有 `heal_repull_complete`（`sameReceiver=true`）或新的 `playback_gain`。没有 `unsubscribe`。
+
 **1.8.11-1 到 1.8.11-10 是另一条预发布线，不是 1.8.11 的内容。** 已经 exact 锁定 `1.8.11-10` 的工程不要改成 `1.8.11`。按语义化版本，`1.8.11` 高于 `1.8.11-10`，那样会换到这份稳定包，预发布线上的接口不在其中。要那条预发布线请继续 **exact 锁定 `1.8.11-10`**。
 
 **1.8.12-5 是 1.8.12 的预发布，不是 1.8.11 的内容。** `from: "1.8.11"` 不会解析到它，`1.8.12-4` 也不会自动升上来。闭麦入会后再开麦，静音轨要留在原来的发送端，请 **exact 锁定 `1.8.12-5`**。`1.8.12-4` 是上一包，只有退订后再订时把接收 m-line 答回 `recvonly`。
