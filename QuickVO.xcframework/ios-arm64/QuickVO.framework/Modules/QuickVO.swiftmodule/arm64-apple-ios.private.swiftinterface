@@ -429,6 +429,11 @@ extension QuickVO::LocalRTCParticipant {
   final public func stopAll() async
 }
 extension QuickVO::LocalRTCParticipant {
+  final public func startRingtone(_ url: Foundation::URL, loop: Swift::Bool = true) async throws
+  final public func setRingtoneVolume(_ volume: Swift::Float) async
+  final public func stopRingtone() async
+}
+extension QuickVO::LocalRTCParticipant {
   final public var isMultitaskingCameraAccessSupported: Swift::Bool {
     get
   }
@@ -1755,6 +1760,9 @@ public struct ReconnectReducer : Swift::Sendable {
   public static let sessionInvalidErrorCode: Swift::Int
   public init(config: QuickVO::ReconnectCoreConfig)
   public func reduce(_ state: QuickVO::ReconnectState, _ event: QuickVO::CoreEvent) -> QuickVO::ReconnectReduction
+}
+public enum RingtoneError : Swift::Error, Swift::Sendable {
+  case unreadable(Foundation::URL)
 }
 public enum AudioError : Swift::Error {
   case permissionDenied

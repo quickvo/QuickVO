@@ -627,6 +627,49 @@ public enum RTCAudioRouteError {
 
 **采集自愈**：引擎启动 1 秒后仍没有麦克风回调，或开麦期间输入持续 5 秒数字全零，SDK 会重建一次音频图（分别限频 10 秒、30 秒），日志见 `capture_stalled` / `capture_silent selfheal`。
 
+### 回铃
+
+主叫等待对方接听时，把铃声交给 SDK 播。铃声和远端语音走同一台通话引擎、同一个 `AVAudioSession`。进房不会把铃声停掉，所以不用自己再暂停。
+
+自己用 `AVAudioPlayer` 播，进房会切到 `.playAndRecord` 并启动通话引擎，系统会打断这个播放器。进房成功后再暂停，对端人声还没到，中间就是静音。
+
+```swift
+await room.localPartipant.prepareAudioGraph(for: option)
+try await room.localPartipant.startRingtone(ringtoneURL)          // 默认循环
+try await room.join(token, roomId, option)                        // 铃声继续
+// 信令确认对方接听，不要绑在 join 返回上
+await room.localPartipant.stopRingtone()
+```
+
+`ringtoneURL` 是 `AVAudioFile` 能打开的本地文件（`wav`、`caf`、`m4a`、`mp3`）。打不开抛 `RingtoneError.unreadable`。
+
+| 方法 | 作用 |
+| --- | --- |
+| `startRingtone(_:loop:)` | 本机播放。`loop` 默认 `true`。第二次调用替换上一次 |
+| `setRingtoneVolume(_:)` | 只改铃声，`0...1`。不影响 `setRoomAudioVolume`，也不影响麦克风 |
+| `stopRingtone()` | 停止。没有在播时直接返回 |
+
+铃声只从扬声器/听筒出来，**不会混进上行**，对方听不见。这和 `playAudio` 不是一条路：`playAudio` 把文件混进麦克风，是给房间里的人听的伴奏。
+
+CallKit（`.systemCallUI`）在 `didActivate` 之前引擎不会启动，铃声先记下，激活后才出声。系统来电铃仍由 CallKit 播。这条接口是会话交给 SDK 之后、对端人声还没到的等待音。
+
+```swift
+await room.localPartipant.setAudioSessionPolicy(.systemCallUI)
+await room.localPartipant.prepareAudioGraph(for: option)
+try await room.localPartipant.startRingtone(ringtoneURL)
+// CXProviderDelegate.provider(_:didActivate:)
+await room.localPartipant.audioSessionDidActivate(true)
+try await room.join(token, roomId, option)
+```
+
+`quit` 会停掉铃声。最后一通 `.terminal` 在等服务器应答前就会停。handoff 留着通话引擎，但上一通的铃声不会带进下一通。取消呼叫时如果还没 `quit`，调用 `stopRingtone()`。
+
+音频图重建、路由重启、中断恢复之后，SDK 从文件开头再排一次。这次空隙和通话引擎的重启是同一次，中间不要再插一个自己的播放器。
+
+不要在「第一帧远端音频」上停。轨道一接上就会拉数据，里面经常是舒适噪声，时间点接近进房，不是接听。
+
+验收：`prepareAudioGraph` 之后有 `[av] ring_start`，出声时有 `[av] ring_restore`。进房复用预热图时没有为铃声停掉引擎。`stopRingtone` 或 `quit` 打出 `[av] ring_stop`。对方听不见这段铃声。
+
 ### 多任务摄像头（iOS 16+ 分屏 / 台前调度）
 
 ```swift
@@ -1451,12 +1494,14 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-**1.8.13-2 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-2`。要这一包请 **exact 锁定 `1.8.13-2`**。`1.8.13-1` 会把闭麦算进静音，不要再锁那一包。
+**1.8.13-3 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-3`。要这一包请 **exact 锁定 `1.8.13-3`**。`1.8.13-2` 没有回铃接口。
+
+**1.8.13-3：** 新增本机回铃 `localPartipant.startRingtone(_:loop:)`、`setRingtoneVolume(_:)`、`stopRingtone()`。铃声在通话引擎的播放链上循环，不进上行。`prepareAudioGraph` 之后调用，`join` 不会把它停掉；对方接听的信令里再 `stopRingtone()`。CallKit 等 `audioSessionDidActivate(true)` 之后才出声。`quit` 会停。详见[回铃](#回铃)。
 
 **1.8.13-2：** 闭麦、禁麦或没有发布权限不再触发 `silence`，进行中的计时也会清掉。只有麦开着且允许发布时，连续 3 秒没声音才回调一次。同一次安静不重复回调。日志仍是 `[av] silence`。
 - 验收：闭麦满 3 秒没有 `silence`。开麦且允许发布后，连续 3 秒低于说话阈值收到一次，继续没声音不重复；再次说话后再安静满 3 秒会再收到一次。
 
-**1.8.13-1：** `isSpeaking` 连续为 false 达到 `RoomAudioCaptureConfig.silenceDuration`（默认 3 秒）后，回调一次 `RTCParticipantDelegate.silence`。再次说话后才会再回调。设成 `nil` 关闭。这一包把闭麦和没有发布权限也算进计时，请改锁 `1.8.13-2`。
+**1.8.13-1：** `isSpeaking` 连续为 false 达到 `RoomAudioCaptureConfig.silenceDuration`（默认 3 秒）后，回调一次 `RTCParticipantDelegate.silence`。再次说话后才会再回调。设成 `nil` 关闭。这一包把闭麦和没有发布权限也算进计时，请改锁 `1.8.13-3`。
 
 当前稳定版 **1.8.12**，与预发布 **1.8.12-23** 同内容，只把版本号改成 `1.8.12`。`from: "1.8.10"` 和 `from: "1.8.11"` 都会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖是 `from: "0.0.2"`。
 
