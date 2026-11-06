@@ -1494,7 +1494,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-**1.8.13-6 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-6`。要这一包请 **exact 锁定 `1.8.13-6`**。
+**1.8.13-7 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-7`。要这一包请 **exact 锁定 `1.8.13-7`**。
+
+**1.8.13-7：** 进房之后 ICE 从未连上，并且这次重建名额已经用完时，房间按掉线结束。宿主收到 `roomStatus(.disConnect)` 和 `didClose`（`reason` 为 `.disconnected`）。日志是 `[reconnect] ice_failed action=close reason=never_connected_exhausted`。已经连通过一次之后的断线仍走原来的重连阶梯，名额用完不会因此立刻关房。
+
+**1.8.13-6 是上一包预发布。** 要首次握手失败后关房请改锁 `1.8.13-7`。
 
 **1.8.13-6：** 扬声器 override 还在、又连着只有 HFP 的手表时，先放下 override，把内置麦钉进 `currentRoute.inputs`，再把输出写回扬声器。`setPreferredInput` 抛错时日志带 `domain`、`code`、`message`。钉麦失败在本地以 `microphone unavailable` 结束，不进入开麦等待，也不报 `publish Stream Failure`。
 
