@@ -1494,7 +1494,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-**1.8.13-5 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-5`。要这一包请 **exact 锁定 `1.8.13-5`**。
+**1.8.13-6 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-6`。要这一包请 **exact 锁定 `1.8.13-6`**。
+
+**1.8.13-6：** 扬声器 override 还在、又连着只有 HFP 的手表时，先放下 override，把内置麦钉进 `currentRoute.inputs`，再把输出写回扬声器。`setPreferredInput` 抛错时日志带 `domain`、`code`、`message`。钉麦失败在本地以 `microphone unavailable` 结束，不进入开麦等待，也不报 `publish Stream Failure`。
+
+**1.8.13-5 是上一包预发布。** 要放下扬声器再钉麦的修复请改锁 `1.8.13-6`。
 
 **1.8.13-5：** 扬声器已经是输出口、但 `currentRoute.inputs` 为空时，会把内置麦设为 preferred input，不再把「输出已是扬声器」当成路由完成。没有输入端口时只建播放链，回铃可以响；输入出现后再建成双工图。开麦进房要先拿到第一块 PCM，才发 socket join。输入挂不上时在本地失败，不再发出 `tracks=[]` 的 join。
 

@@ -1867,6 +1867,7 @@ public enum ConnectError : QuickVO::RoomError {
   case trackNotPublished([QuickVO::RoomUserSubData])
   case simulcastNoSFUTrack
   case endpointNotConfigured
+  case microphoneUnavailable(Swift::String)
   public var description: Swift::String {
     get
   }
