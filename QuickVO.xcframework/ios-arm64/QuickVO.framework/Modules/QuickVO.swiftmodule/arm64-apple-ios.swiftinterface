@@ -68,6 +68,7 @@ final public class RoomAudioCaptureConfig {
   public static let defaultNoiseSuppression: Swift::Bool
   public static let defaultAutoGainControl: Swift::Bool
   public static let defaultRouteSwitching: QuickVO::RTCAudioRouteSwitching
+  public static let defaultSilenceDuration: Swift::Double
   final public var echoCancellation: Swift::Bool
   final public var noiseSuppression: Swift::Bool {
     get
@@ -75,6 +76,7 @@ final public class RoomAudioCaptureConfig {
   }
   final public var autoGainControl: Swift::Bool
   final public var audioLevelMonitor: Swift::Int?
+  final public var silenceDuration: Foundation::TimeInterval?
   final public var routeSwitching: QuickVO::RTCAudioRouteSwitching
   public init(echoCancellation: Swift::Bool, noiseSuppression: Swift::Bool, autoGainControl: Swift::Bool)
   @objc deinit
@@ -919,6 +921,7 @@ public protocol RTCParticipantDelegate : AnyObject {
   func removeAudioTrack(_ participant: QuickVO::RTCParticipant, _ track: QuickVO::RoomAudioTrack)
   func action(_ participant: QuickVO::RTCParticipant, _ action: QuickVO::RTCParticipantAtion)
   func speaking(_ participant: QuickVO::RTCParticipant, _ speaking: Swift::Bool)
+  func silence(_ participant: QuickVO::RTCParticipant)
   func network(_ participant: QuickVO::RTCParticipant, _ net: QuickVO::NetMonitorValue)
   func forbid(_ participant: QuickVO::RTCParticipant, _ action: QuickVO::PaticipantForbidAction)
   func speechString(_ participant: QuickVO::RTCParticipant, _ string: QuickVO::RoomSpeechData)
@@ -930,6 +933,7 @@ extension QuickVO::RTCParticipantDelegate {
   public func removeAudioTrack(_ participant: QuickVO::RTCParticipant, _ track: QuickVO::RoomAudioTrack)
   public func action(_ participant: QuickVO::RTCParticipant, _ action: QuickVO::RTCParticipantAtion)
   public func speaking(_ participant: QuickVO::RTCParticipant, _ speaking: Swift::Bool)
+  public func silence(_ participant: QuickVO::RTCParticipant)
   public func network(_ participant: QuickVO::RTCParticipant, _ net: QuickVO::NetMonitorValue)
   public func forbid(_ participant: QuickVO::RTCParticipant, _ action: QuickVO::PaticipantForbidAction)
   public func speechString(_ participant: QuickVO::RTCParticipant, _ string: QuickVO::RoomSpeechData)

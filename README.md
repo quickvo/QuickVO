@@ -449,6 +449,7 @@ func addVideoTrack(_ participant: RTCParticipant, _ track: RoomVideoTrack)     /
 func addAuidoTrack(_ participant: RTCParticipant, _ track: RoomAudioTrack)     // 可选
 func action(_ participant: RTCParticipant, _ action: RTCParticipantAtion)
 func speaking(_ participant: RTCParticipant, _ speaking: Bool)
+func silence(_ participant: RTCParticipant)                                 // 可选，连续没声音
 func network(_ participant: RTCParticipant, _ net: NetMonitorValue)
 func forbid(_ participant: RTCParticipant, _ action: PaticipantForbidAction)
 func speechString(_ participant: RTCParticipant, _ string: RoomSpeechData)
@@ -685,6 +686,7 @@ public struct RoomVideoCropping {
 | `noiseSuppression` | `true` |
 | `autoGainControl` | `false` |
 | `audioLevelMonitor` | `nil`（不启用房间级音量回调） |
+| `silenceDuration` | `3`（连续没声音这么多秒后回调一次 `silence`；`nil` 关闭） |
 | `routeSwitching` | `.seamless`（见[音频路由](#音频路由)） |
 
 **降噪（`noiseSuppression`）可在通话中切换**：赋值会按当前 Bool 重建共享采集 source，并用同一个 `trackId` 换到已有 sender 上（不 `addTransceiver`、不重新协商）。对端可能先短暂听不到再恢复。也可调用 `RTCEngine.setNoiseSuppression(_:)`，与写这个 Bool 等价。只影响本端上行（别人听你），并且不关闭系统 Voice Processing——关掉也不是原声麦。未建轨时只记配置，下次建轨生效。
@@ -1088,7 +1090,7 @@ participant.isSpeaking       // audiollevel > 0.02
 participant.volume           // 远端播放音量 0...10，默认 5，可写
 ```
 
-`speaking(_:_:)` 在说话状态翻转时回调。房间级的 `updateAudioLevel` 需要先设置 `RTCRoomConfig.config.audio.audioLevelMonitor`，见[采集配置](#采集配置)。
+`speaking(_:_:)` 在说话状态翻转时回调。`silence(_:)` 在 `isSpeaking` 持续为 false 达到 `RTCRoomConfig.config.audio.silenceDuration` 后回调一次，默认 3 秒；再次说话后，下一轮静音才会再回调。设成 `nil` 关闭。本端关麦或没有推流权限时电平是 0，同样会计时。P2P 不上报本端这条静音。房间级的 `updateAudioLevel` 需要先设置 `RTCRoomConfig.config.audio.audioLevelMonitor`，见[采集配置](#采集配置)。
 
 ### 设备网络
 
@@ -1448,6 +1450,11 @@ public enum ConnectError: RoomError {
 ---
 
 ## 版本与迁移
+
+**1.8.13-1 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-1`。要这一包请 **exact 锁定 `1.8.13-1`**。
+
+**1.8.13-1：** `isSpeaking` 连续为 false 达到 `RoomAudioCaptureConfig.silenceDuration`（默认 3 秒）后，回调一次 `RTCParticipantDelegate.silence`。再次说话后才会再回调。设成 `nil` 关闭。统计周期 500 ms，回调落在第一条达到时长的采样上。本端关麦或没有推流权限时电平是 0，同样会计时。P2P 不上报本端这条静音。日志是 `[av] silence`。
+- 验收：一个人连续 3 秒 `isSpeaking == false` 后收到一次 `silence`，继续静音不再重复；重新说话后再静音满 3 秒会再收到一次。
 
 当前稳定版 **1.8.12**，与预发布 **1.8.12-23** 同内容，只把版本号改成 `1.8.12`。`from: "1.8.10"` 和 `from: "1.8.11"` 都会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖是 `from: "0.0.2"`。
 
