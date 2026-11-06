@@ -1090,7 +1090,7 @@ participant.isSpeaking       // audiollevel > 0.02
 participant.volume           // 远端播放音量 0...10，默认 5，可写
 ```
 
-`speaking(_:_:)` 在说话状态翻转时回调。`silence(_:)` 在 `isSpeaking` 持续为 false 达到 `RTCRoomConfig.config.audio.silenceDuration` 后回调一次，默认 3 秒；再次说话后，下一轮静音才会再回调。设成 `nil` 关闭。本端关麦或没有推流权限时电平是 0，同样会计时。P2P 不上报本端这条静音。房间级的 `updateAudioLevel` 需要先设置 `RTCRoomConfig.config.audio.audioLevelMonitor`，见[采集配置](#采集配置)。
+`speaking(_:_:)` 在说话状态翻转时回调。`silence(_:)` 用来发现声音异常：麦开着且允许发布时，电平连续低于说话阈值达到 `silenceDuration`（默认 3 秒）回调一次。闭麦、禁麦或没有发布权限不是测量值，进行中的计时会被清掉，不会回调。再次检测到说话后，下一轮才重新计时。设成 `nil` 关闭。通信场景没有 publish 标志也允许发布，麦开着仍会监听。P2P 不上报本端这条静音。房间级的 `updateAudioLevel` 需要先设置 `RTCRoomConfig.config.audio.audioLevelMonitor`，见[采集配置](#采集配置)。
 
 ### 设备网络
 
@@ -1451,10 +1451,12 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-**1.8.13-1 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-1`。要这一包请 **exact 锁定 `1.8.13-1`**。
+**1.8.13-2 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-2`。要这一包请 **exact 锁定 `1.8.13-2`**。`1.8.13-1` 会把闭麦算进静音，不要再锁那一包。
 
-**1.8.13-1：** `isSpeaking` 连续为 false 达到 `RoomAudioCaptureConfig.silenceDuration`（默认 3 秒）后，回调一次 `RTCParticipantDelegate.silence`。再次说话后才会再回调。设成 `nil` 关闭。统计周期 500 ms，回调落在第一条达到时长的采样上。本端关麦或没有推流权限时电平是 0，同样会计时。P2P 不上报本端这条静音。日志是 `[av] silence`。
-- 验收：一个人连续 3 秒 `isSpeaking == false` 后收到一次 `silence`，继续静音不再重复；重新说话后再静音满 3 秒会再收到一次。
+**1.8.13-2：** 闭麦、禁麦或没有发布权限不再触发 `silence`，进行中的计时也会清掉。只有麦开着且允许发布时，连续 3 秒没声音才回调一次。同一次安静不重复回调。日志仍是 `[av] silence`。
+- 验收：闭麦满 3 秒没有 `silence`。开麦且允许发布后，连续 3 秒低于说话阈值收到一次，继续没声音不重复；再次说话后再安静满 3 秒会再收到一次。
+
+**1.8.13-1：** `isSpeaking` 连续为 false 达到 `RoomAudioCaptureConfig.silenceDuration`（默认 3 秒）后，回调一次 `RTCParticipantDelegate.silence`。再次说话后才会再回调。设成 `nil` 关闭。这一包把闭麦和没有发布权限也算进计时，请改锁 `1.8.13-2`。
 
 当前稳定版 **1.8.12**，与预发布 **1.8.12-23** 同内容，只把版本号改成 `1.8.12`。`from: "1.8.10"` 和 `from: "1.8.11"` 都会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖是 `from: "0.0.2"`。
 
