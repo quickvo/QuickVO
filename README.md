@@ -1494,7 +1494,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-**1.8.13-3 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-3`。要这一包请 **exact 锁定 `1.8.13-3`**。`1.8.13-2` 没有回铃接口。
+**1.8.13-4 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.12**。`from: "1.8.12"` 停在 1.8.12，不会升到 `1.8.13-4`。要这一包请 **exact 锁定 `1.8.13-4`**。
+
+**1.8.13-4：** 会话已经是 `playAndRecord` + `voiceChat` 时，预热不再 `setCategory`，避免把扬声器打回听筒再写回来。引擎启动把扬声器打掉时，补一次 override，不重启引擎；铃声等现场回到扬声器再排。handoff 拆掉的那一通只停自己的铃声。被 `terminal_hold` 拦住的播放在下一通 `attach` 时补上。
+
+**1.8.13-3 是上一包预发布。** 已有回铃接口。要 1.8.13-4 的路由和 handoff 修复请改锁 `1.8.13-4`。
 
 **1.8.13-3：** 新增本机回铃 `localPartipant.startRingtone(_:loop:)`、`setRingtoneVolume(_:)`、`stopRingtone()`。铃声在通话引擎的播放链上循环，不进上行。`prepareAudioGraph` 之后调用，`join` 不会把它停掉；对方接听的信令里再 `stopRingtone()`。CallKit 等 `audioSessionDidActivate(true)` 之后才出声。`quit` 会停。详见[回铃](#回铃)。
 
