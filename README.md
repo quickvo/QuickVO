@@ -1494,11 +1494,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前稳定版 **1.8.13**，与预发布 **1.8.13-8** 同内容，只把版本号改成 `1.8.13`。`from: "1.8.12"` 会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖仍是 `from: "0.0.2"`。
+当前稳定版 **1.8.13**。`from: "1.8.12"` 会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖仍是 `from: "0.0.2"`。已经 exact 锁定 `1.8.13` 的工程要重新解析这个 tag：这一版在 1.8.13-8 之上补了演讲者大图的修复。
 
-**1.8.13-1 到 1.8.13-8 是预发布线。** 按语义化版本，`1.8.13` 高于这些带后缀的版本。已经 exact 锁定 `1.8.13-8` 的工程改到 `1.8.13`，行为不变。`1.8.13-7` 及更早的后缀包不是这一稳定版的全部内容。
+**1.8.13-1 到 1.8.13-8 是预发布线。** 按语义化版本，`1.8.13` 高于这些带后缀的版本。`1.8.13-8` 及更早的后缀包不是这一稳定版的全部内容。
 
-**1.8.13**（即 1.8.13-8）：相对 1.8.12，这一版带上 1.8.13-1 到 1.8.13-8 的全部行为。重连放弃后 SDK 不本地 `close`，宿主收到一次 `roomError`（`room disConnected`），需要自己 `quit()`，对方才会离开。本机回铃是 `startRingtone` / `setRingtoneVolume` / `stopRingtone`。连着只有 HFP 的手表时，扬声器会钉内置麦。各条的细节见下面的预发布说明。
+**1.8.13：** 包含 1.8.13-1 到 1.8.13-8 的全部行为，并修了演讲者大图在订阅收尾时闪一下。摄像头已经挂在 `RoomVideoView` 上并且在出画时，后面的订阅不会清掉这一帧，也不会对同一块 view 再挂一次。第一次订上这路摄像头时，画面等到 answer 落地后才交给 App。重连放弃后 SDK 不本地 `close`，宿主收到一次 `roomError`（`room disConnected`），需要自己 `quit()`，对方才会离开。本机回铃是 `startRingtone` / `setRingtoneVolume` / `stopRingtone`。连着只有 HFP 的手表时，扬声器会钉内置麦。各条的细节见下面的预发布说明。
 
 **1.8.13-8：** 重连放弃时不再本地 `close`。宿主收到一次 `roomError`，错误是 `room disConnected`。房间和套接字还在，请在这个回调里调用 `quit()`，对方才会收到离开。日志是 `[reconnect] room_error error=disConnected`。两种情况会到这里：40 秒重连到期（`gave_up reason=episodeTimeout`），以及进房后 ICE 从未连上且重建名额用完（`reason=never_connected_exhausted`）。恢复过程中接口抛出的同一个错误不会再推进 `roomError`。已经连通过之后、重连还没放弃时，名额用完仍不关房。
 
