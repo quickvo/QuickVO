@@ -67,6 +67,8 @@ final public class RoomAudioCaptureConfig {
   public static let defaultEchoCancellation: Swift::Bool
   public static let defaultNoiseSuppression: Swift::Bool
   public static let defaultAutoGainControl: Swift::Bool
+  public static let defaultStreamDenoiser: Swift::Bool
+  public static let defaultPlaybackDenoiser: Swift::Bool
   public static let defaultRouteSwitching: QuickVO::RTCAudioRouteSwitching
   public static let defaultSilenceDuration: Swift::Double
   final public var echoCancellation: Swift::Bool
@@ -75,6 +77,14 @@ final public class RoomAudioCaptureConfig {
     set
   }
   final public var autoGainControl: Swift::Bool
+  final public var streamDenoiser: Swift::Bool {
+    get
+    set
+  }
+  final public var playbackDenoiser: Swift::Bool {
+    get
+    set
+  }
   final public var audioLevelMonitor: Swift::Int?
   final public var silenceDuration: Foundation::TimeInterval?
   final public var routeSwitching: QuickVO::RTCAudioRouteSwitching
@@ -778,6 +788,10 @@ extension QuickVO::RTCEngine {
   final public func configure(socketURL: Foundation::URL? = nil, iceURL: [Swift::String]? = nil)
   final public func setNoiseSuppression(_ enabled: Swift::Bool)
   public static func setNoiseSuppression(_ enabled: Swift::Bool)
+  final public func setStreamDenoiser(_ enabled: Swift::Bool)
+  public static func setStreamDenoiser(_ enabled: Swift::Bool)
+  final public func setPlaybackDenoiser(_ enabled: Swift::Bool)
+  public static func setPlaybackDenoiser(_ enabled: Swift::Bool)
   public static func destroy()
 }
 public enum QuitIntent {
@@ -1323,6 +1337,7 @@ extension QuickVO::RTCRoom {
   final public func join(_ token: Swift::String? = nil, _ roomId: Swift::String, _ option: QuickVO::RoomLocalOption) async throws
   final public func join(_ roomId: Swift::String, _ option: QuickVO::RoomLocalOption) async throws
   final public func quit(intent: QuickVO::QuitIntent = .terminal) async
+  final public func reserveNextCall()
   final public func updateToken(_ roomId: Swift::String, _ token: Swift::String) async throws
   @discardableResult
   final public func subscribe(_ userData: [QuickVO::RoomUserSubData]) async throws -> [QuickVO::RoomTrackSubscribeResult]
