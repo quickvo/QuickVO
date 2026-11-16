@@ -1494,9 +1494,11 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
-当前稳定版 **1.8.14**。`from: "1.8.12"` 会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖仍是 `from: "0.0.2"`。这个 tag 又原地替换了一次：已经解析过上一包 1.8.14 的工程要清掉 Swift Package 缓存再解析。这一包在会议切通话之上。路由上暂时没有麦克风时，音频通话和视频通话都照常进房，采集等输入出现后再按原意图打开。最后一间结束时先清掉扬声器覆盖。
+当前稳定版 **1.8.14**。`from: "1.8.12"` 会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖仍是 `from: "0.0.2"`。这个 tag 又原地替换了一次（加入听筒选择保留和 `audioRouteUnusable`）：已经解析过上一包 1.8.14 的工程要清掉 Swift Package 缓存再解析。这一包在会议切通话之上。路由上暂时没有麦克风时，音频通话和视频通话都照常进房，采集等输入出现后再按原意图打开。最后一间结束时先清掉扬声器覆盖。
 
 **1.8.14：** 会议切到通话时，离开那一间的 `stopRecording` / `stopPlayout` 不再改共享设备的意图。后继在 `quit(.handoff)` 之前调用一次 `reserveNextCall()`，`await` 退出后再 `prepareAudioGraph` 和 `join`。关麦会议留下的关麦位不再挡住后继 `enableMicrophone(true)`。离开会议拆设备期间的 `setCaptureEnabled(false)` 会被跳过（日志 `capture_enabled skip reason=handoff`）。会议连接关闭时 ADM 回调作废，引擎会停一下（`terminate session`），这不是关麦。后继 `prepareAudioGraph` 建连后出现 `graph_rebuild reason=adm`，按离开前的播放和麦的开关重新启动。后继自己的关麦在退出刷完音频队列之后仍然生效。外放加手表导致 `inputs` 为空时，进房日志是 `audio_defer reason=no_input`，不报 `microphone_unavailable`。输入出现后按开麦意图打开采集。钉麦失败不再把 `overrideOutputAudioPort(.speaker)` 写回去。最后一间结束日志是 `session_deactivate override=none`。`.standard` 加无缝切换仍是 `.voiceChat`，外放不要改 `.videoChat`。
+
+**1.8.14：** `.standard` 下用户在控制中心或应用内路由选择器把声音切到听筒（或别的口），SDK 把它记成 `desiredAudioRoute`（日志 `adopt_route source=system`），不再写回扬声器。这时 `audioSessionRouteDidChange` 的 `source` 仍是 `.system`，但 `desired == output`。自动补回扬声器只发生在 SDK 自己动会话（改类别、激活、钉麦、建图、引擎启动）后 2 秒内（日志 `speaker_restore`）。设备接入或断开不会被自动采纳，仍由宿主决定。新增 `RTCRoomDelegate.audioRouteUnusable(_:_:)`：外设写入没落上（`.notLanded`）、蓝牙输出没有麦克风（`.noInput`）、采集重建后仍无声（`.silentCapture`）时上报，日志 `route_unusable`。同一外设同一原因在声音离开它之前只报一次。SDK 不替宿主挑下一路，宿主从输出栈里移除 `issue.output`，再 `setAudioRoute` 下一项（没有可用外设时音频通话用听筒，视频通话用扬声器）。按外设身份移除，不要盲目弹栈：`oldDeviceUnavailable` 和这个事件可能都会来。
 
 **1.8.14：** iOS 屏幕共享在送进编码器之前处理方向。竖屏（方向 1、3）只旋转。方向 6 转 270°、方向 8 转 90°，帧本身标 0°，不再左右翻转。上一包在转正之后又做了一次水平镜像，远端看到的是左右相反。方向 2、4、5、7 仍是先翻转再把旋转标在帧上。翻转器在进程内编译内嵌着色器。编译或翻转失败时不再丢帧，改为发出未翻转的画面并带上立起它的旋转。成功日志是 `mirror_flip_ready`，横屏方向日志是 `ori=6 mirror=false rtc=0 flip=270`，另一方向是 `ori=8 mirror=false rtc=0 flip=90`。失败是 `mirror_flip_unavailable publishing_unflipped` 或 `mirror_flip_failed publishing_unflipped`。摄像头的「视频镜像」仍只作用于本机自拍预览，不作用到屏幕共享。
 

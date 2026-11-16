@@ -1088,6 +1088,22 @@ public enum RTCAudioRouteError : Swift::Error, Swift::Sendable {
   case sessionFailed(any Swift::Error)
   case settledElsewhere(QuickVO::RTCAudioOutput)
 }
+public enum RTCAudioRouteUnusableReason : Swift::Sendable, Swift::Hashable {
+  case notLanded
+  case noInput
+  case silentCapture
+  public static func == (a: QuickVO::RTCAudioRouteUnusableReason, b: QuickVO::RTCAudioRouteUnusableReason) -> Swift::Bool
+  public func hash(into hasher: inout Swift::Hasher)
+  public var hashValue: Swift::Int {
+    get
+  }
+}
+public struct RTCAudioRouteUnusable : Swift::Sendable {
+  public let output: QuickVO::RTCAudioOutput
+  public let reason: QuickVO::RTCAudioRouteUnusableReason
+  public let live: QuickVO::RTCAudioOutput?
+  public init(output: QuickVO::RTCAudioOutput, reason: QuickVO::RTCAudioRouteUnusableReason, live: QuickVO::RTCAudioOutput?)
+}
 public enum RoomScene : Swift::Sendable {
   case communication
   case meeting
@@ -1243,6 +1259,7 @@ public protocol RTCRoomDelegate : AnyObject {
   func didSubscribed(_ room: QuickVO::RTCRoom, _ sub: [QuickVO::RoomUserSubData])
   func audioSessionRouteChange(_ room: QuickVO::RTCRoom, _ route: QuickVO::RTCAudioRoute)
   func audioSessionRouteDidChange(_ room: QuickVO::RTCRoom, _ change: QuickVO::RTCAudioRouteChange)
+  func audioRouteUnusable(_ room: QuickVO::RTCRoom, _ issue: QuickVO::RTCAudioRouteUnusable)
   func audioSessionInterrupt(_ room: QuickVO::RTCRoom, _ type: AVFAudio::AVAudioSession.AVFAudio::InterruptionType)
   func liveDidSetPlaybackUrls(_ room: QuickVO::RTCRoom, _ urls: QuickVO::RoomLivePlaybackUrls)
   func updateAudioLevel(_ room: QuickVO::RTCRoom, _ participant: [QuickVO::RTCParticipant])
@@ -1265,6 +1282,7 @@ extension QuickVO::RTCRoomDelegate {
   public func updateAudioLevel(_ room: QuickVO::RTCRoom, _ participant: [QuickVO::RTCParticipant])
   public func audioSessionRouteChange(_ room: QuickVO::RTCRoom, _ route: QuickVO::RTCAudioRoute)
   public func audioSessionRouteDidChange(_ room: QuickVO::RTCRoom, _ change: QuickVO::RTCAudioRouteChange)
+  public func audioRouteUnusable(_ room: QuickVO::RTCRoom, _ issue: QuickVO::RTCAudioRouteUnusable)
   public func audioSessionInterrupt(_ room: QuickVO::RTCRoom, _ type: AVFAudio::AVAudioSession.AVFAudio::InterruptionType)
   public func liveDidSetPlaybackUrls(_ room: QuickVO::RTCRoom, _ urls: QuickVO::RoomLivePlaybackUrls)
   public func disConnectWithoutRoom(_ room: QuickVO::RTCRoom)
