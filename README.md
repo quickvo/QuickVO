@@ -1494,6 +1494,10 @@ public enum ConnectError: RoomError {
 
 ## 版本与迁移
 
+**1.8.15-1 是预发布，不是当前稳定版。** 稳定版仍是 **1.8.14**。`from: "1.8.14"` 停在 1.8.14，不会升到 `1.8.15-1`。要这一包请 **exact 锁定 `1.8.15-1`**。
+
+**1.8.15-1：** `onPublish` 比 `onJoin` 先到、名册里还没有这个人、也没有退出标记时，用这条发布里的 `User` 建一个成员，插入名册，回调一次 `didJoin`，再订阅轨道。人已经在名册里时只订阅，不再回调 `didJoin`。之后的 `onJoin`、批量加入和快照把人合进同一个对象，不再回调第二次 `didJoin`。人已经退出、名册里没有他时，不重建成员，这条发布的轨道留在退出标记上；下一次进房或快照收进这个人时再订阅这些轨道并清掉标记。本端自己的 `onPublish` 不建成员。离开房间和开始下一次加入时清掉标记。
+
 当前稳定版 **1.8.14**。`from: "1.8.12"` 会升到这一版。应用内接听仍用 `.standard`。WebRTC-iOS 依赖仍是 `from: "0.0.2"`。这个 tag 又原地替换了一次（远端轨道对象在收包为 0 与重拉时保持不变、只由服务端事件移除；之前一次是订阅协商在断线后补完、死会话推送触发重建）：已经解析过上一包 1.8.14 的工程要清掉 Swift Package 缓存再解析。这一包在会议切通话之上。路由上暂时没有麦克风时，音频通话和视频通话都照常进房，采集等输入出现后再按原意图打开。最后一间结束时先清掉扬声器覆盖。
 
 **1.8.14：** 远端的 `RoomVideoTrack` / `RoomAudioTrack` 每个成员每种类型只有一个对象，直到服务端事件（关轨、退出、离开、取消发布、发布权限被收回）或宿主自己 `unSubscribe` 才会收到 `removeVideoTrack` / `removeAudioTrack`。收包为 0 时画面停在最后一帧，不会被移除。看门狗重拉换到新 mid（日志 `receiver_adopt`、`track_adopt`）、2127 刷新、共享接收器修复、SFU 重建 / 重启 / 版本变更、P2P 与 SFU 互切，都把新接收器接进同一个对象，不再回调 remove + add。视图已有画面时，新接收器先挂一个隐藏探针，等它解出第一帧再接管视图（`feed_pending` → `feed_swap reason=first_frame`），之前一直显示旧画面。内部移除只把对象暂存（`track_park`），对象仍在 `getTrack(type:)`、`videoTracks`、`audioTracks` 里。看门狗重拉次数用完后只上报一次 `subscribeStreamFailure`（`reason=.forwardingDropped`，日志 `[watchdog] stalled ... track=kept sfuSub=kept`），不再退订也不再移除轨道，之后每 `slowHealIntervalMs`（默认 60 秒）慢速重拉一次。连续 `budgetResetHealthyMs`（默认 60 秒）收包增长后，重拉次数恢复。屏幕共享对端帧率为 0（静态画面）不算断流。本地没有这个 mid 的 inbound 统计按 0 包计。同一个对象的 `trackId` 会随接收器切换而变化，宿主应按对象而不是 `trackId` 识别轨道。
