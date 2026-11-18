@@ -1859,7 +1859,9 @@ public struct RTCForwardingWatchdogConfig : Swift::Sendable {
   public var graceMs: Swift::Int
   public var cooldownMs: Swift::Int
   public var maxSelfHealPerTrack: Swift::Int
-  public init(pushThresholdVideoKbps: Swift::Double = 10, pushThresholdAudioKbps: Swift::Double = 5, windowSamples: Swift::Int = 10, dcStaleMs: Swift::Int = 3000, graceMs: Swift::Int = 3000, cooldownMs: Swift::Int = 30000, maxSelfHealPerTrack: Swift::Int = 3)
+  public var slowHealIntervalMs: Swift::Int
+  public var budgetResetHealthyMs: Swift::Int
+  public init(pushThresholdVideoKbps: Swift::Double = 10, pushThresholdAudioKbps: Swift::Double = 5, windowSamples: Swift::Int = 10, dcStaleMs: Swift::Int = 3000, graceMs: Swift::Int = 3000, cooldownMs: Swift::Int = 30000, maxSelfHealPerTrack: Swift::Int = 3, slowHealIntervalMs: Swift::Int = 60000, budgetResetHealthyMs: Swift::Int = 60000)
 }
 extension QuickVO::RTCRoomConfig {
   public static var defaultVideo: QuickVO::RoomVideoCaptureConfig {
