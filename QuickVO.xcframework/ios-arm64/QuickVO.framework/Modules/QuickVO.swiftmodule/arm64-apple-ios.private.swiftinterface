@@ -481,6 +481,7 @@ public enum RecoveryTier : Swift::Sendable, Swift::CustomStringConvertible {
   case rebuild(attempt: Swift::Int)
   case relay
   case socketOnly
+  case establishing
   public var description: Swift::String {
     get
   }
@@ -488,7 +489,7 @@ public enum RecoveryTier : Swift::Sendable, Swift::CustomStringConvertible {
 public struct ConnectionHealth : Swift::Sendable, Swift::Equatable {
   public var ice: QuickVO::IceHealth
   public var socket: QuickVO::SocketHealth
-  public init(ice: QuickVO::IceHealth = .connected, socket: QuickVO::SocketHealth = .connected)
+  public init(ice: QuickVO::IceHealth = .connecting, socket: QuickVO::SocketHealth = .connected)
   public var isFullyHealthy: Swift::Bool {
     get
   }
@@ -2092,6 +2093,7 @@ extension Swift::Bool {
   public func handle(_ event: QuickVO::ReconnectEvent)
   public func cancel()
   public func isManagingConnection() -> Swift::Bool
+  public func beginInitialIceDeadline()
   public func isProbeStale(forEpisodeGeneration gen: Swift::UInt64) -> Swift::Bool
   public func confirmSocketSession(valid: Swift::Bool, episodeGeneration gen: Swift::UInt64)
   public enum RebuildSlot : Swift::Equatable {
