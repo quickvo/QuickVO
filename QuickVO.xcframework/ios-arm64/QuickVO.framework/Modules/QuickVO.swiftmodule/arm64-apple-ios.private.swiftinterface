@@ -1904,6 +1904,7 @@ public enum ConnectError : QuickVO::RoomError {
   case simulcastNoSFUTrack
   case endpointNotConfigured
   case microphoneUnavailable(Swift::String)
+  case transport(QuickVO::TransportLeg, QuickVO::TransportFailure)
   public var description: Swift::String {
     get
   }
@@ -2078,6 +2079,32 @@ extension QuickVO::DetachedTaskActor {
     get
   }
 }
+public enum TransportLeg : Swift::Equatable, Swift::Sendable, Swift::CustomStringConvertible {
+  case socket
+  case http
+  public var description: Swift::String {
+    get
+  }
+  public static func == (a: QuickVO::TransportLeg, b: QuickVO::TransportLeg) -> Swift::Bool
+  public func hash(into hasher: inout Swift::Hasher)
+  public var hashValue: Swift::Int {
+    get
+  }
+}
+public enum TransportFailure : Swift::Equatable, Swift::Sendable, Swift::CustomStringConvertible {
+  case timeout
+  case dns
+  case cannotConnect
+  case tls
+  public var description: Swift::String {
+    get
+  }
+  public static func == (a: QuickVO::TransportFailure, b: QuickVO::TransportFailure) -> Swift::Bool
+  public func hash(into hasher: inout Swift::Hasher)
+  public var hashValue: Swift::Int {
+    get
+  }
+}
 extension Swift::Bool {
   public var int: Swift::Int {
     get
@@ -2207,4 +2234,6 @@ extension QuickVO::TaskActor.QuickVO::State : Swift::Equatable {}
 extension QuickVO::TaskActor.QuickVO::State : Swift::Hashable {}
 extension QuickVO::DetachedTaskActor.QuickVO::State : Swift::Equatable {}
 extension QuickVO::DetachedTaskActor.QuickVO::State : Swift::Hashable {}
+extension QuickVO::TransportLeg : Swift::Hashable {}
+extension QuickVO::TransportFailure : Swift::Hashable {}
 extension QuickVO::UnifiedReconnectMachine.QuickVO::RebuildExhaustReason : Swift::Hashable {}
